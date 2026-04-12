@@ -3,23 +3,39 @@
 @theme {
   --color-primary: #00F0FF;
   --color-primary-dim: #00DEEC;
-  --color-bg-dark: #0a0e18;
-  --color-bg-darker: #05070c;
+}
+
+:root {
+  --color-bg-start: #e2e8f0;
+  --color-bg-end: #cbd5e1;
+  --color-text-main: #0f172a;
+  --glass-bg: rgb(255 255 255 / 0.3);
+  --glass-border: rgb(255 255 255 / 0.5);
+}
+
+.dark {
+  --color-bg-start: #0a0e18;
+  --color-bg-end: #05070c;
+  --color-text-main: #f8fafc;
+  --glass-bg: rgb(255 255 255 / 0.05);
+  --glass-border: rgb(255 255 255 / 0.1);
 }
 
 body {
-  background: radial-gradient(circle at 50% 0%, var(--color-bg-dark), var(--color-bg-darker) 100%);
-  color: #ffffff;
+  background: radial-gradient(circle at 50% 0%, var(--color-bg-start), var(--color-bg-end) 100%);
+  color: var(--color-text-main);
   min-height: 100vh;
   font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.5s ease;
 }
 
 /* Glassmorphism utility classes */
 @utility glass-panel {
-  background-color: rgb(255 255 255 / 0.05);
+  background-color: var(--glass-bg);
   backdrop-filter: blur(24px);
-  border: 1px solid rgb(255 255 255 / 0.1);
+  border: 1px solid var(--glass-border);
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  transition: background-color 0.5s ease, border-color 0.5s ease;
 }

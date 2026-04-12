@@ -1,24 +1,12 @@
-import { Sparkles, BarChart, Clock, ExternalLink } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import prisma from "@/lib/prisma";
 import ShortenForm from "@/components/ShortenForm";
+import LinkCard from "@/components/LinkCard";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LogoutButton } from "@/components/LogoutButton";
 
-export const revalidate = 0; // Disable SSR caching
+export const revalidate = 0;
 
-// Utilidad simple para formato reactivo de tiempo
-function timeAgo(date: Date) {
-  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-  let interval = seconds / 31536000;
-  if (interval > 1) return Math.floor(interval) + " years ago";
-  interval = seconds / 2592000;
-  if (interval > 1) return Math.floor(interval) + " months ago";
-  interval = seconds / 86400;
-  if (interval > 1) return Math.floor(interval) + " days ago";
-  interval = seconds / 3600;
-  if (interval > 1) return Math.floor(interval) + " hours ago";
-  interval = seconds / 60;
-  if (interval > 1) return Math.floor(interval) + " minutes ago";
-  return Math.floor(seconds) + " seconds ago";
-}
 
 export default async function Home() {
   const urls = await prisma.url.findMany({
@@ -38,7 +26,12 @@ export default async function Home() {
           <div className="w-10 h-10 rounded-xl glass-panel flex items-center justify-center p-2">
             <Sparkles className="text-[var(--color-primary)]" />
           </div>
-          <h1 className="text-2xl font-bold tracking-widest text-white/90">REFRACT<span className="text-[var(--color-primary)]">_O</span></h1>
+          <h1 className="text-2xl font-bold tracking-widest dark:text-white/90 text-gray-800">REFRACT<span className="text-[var(--color-primary)]">_O</span></h1>
+        </div>
+        
+        <div className="flex items-center gap-4">
+             <ThemeToggle />
+             <LogoutButton />
         </div>
       </nav>
 
@@ -68,29 +61,7 @@ export default async function Home() {
             </div>
           ) : (
             urls.map((urlItem) => (
-              <div key={urlItem.keyword} className="glass-panel rounded-2xl p-6 flex items-center justify-between group transition-all hover:bg-white/10">
-                <div className="flex items-center gap-6">
-                  <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                    <ExternalLink size={20} className="text-gray-400 group-hover:text-[var(--color-primary)] transition-colors" />
-                  </div>
-                  <div className="overflow-hidden">
-                    <a href={`/${urlItem.keyword}`} target="_blank" className="font-bold text-xl text-[var(--color-primary)] tracking-wide hover:underline block truncate">
-                      refr.ac/{urlItem.keyword}
-                    </a>
-                    <p className="text-gray-500 text-sm mt-1 truncate max-w-md">{urlItem.url}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-8 text-gray-400 shrink-0">
-                  <div className="flex items-center gap-2">
-                    <BarChart size={16} />
-                    <span>{urlItem.clicks.toLocaleString()} clicks</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock size={16} />
-                    <span>{timeAgo(urlItem.createdAt)}</span>
-                  </div>
-                </div>
-              </div>
+              <LinkCard key={urlItem.keyword} urlItem={urlItem} />
             ))
           )}
         </div>
