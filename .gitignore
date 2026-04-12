@@ -1,54 +1,43 @@
-############
-## YOURLS
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Ignore server configuration files
-.htaccess
-*.config
-*.conf
-[Rr]obots.txt
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
-# Ignore everything in user/
-user/*
-# ... except config sample
-!user/config-sample.php
-# ... core plugins
-!user/plugins/hyphens-in-urls/
-!user/plugins/random-bg/
-!user/plugins/random-shorturls/
-!user/plugins/sample-page/
-!user/plugins/sample-plugin/
-!user/plugins/sample-toolbar/
-# ... example pages
-!user/pages/examplepage.php
-# ... and index.html files
-!user/index.html
-!user/**/index.html
+# testing
+/coverage
 
-############
-## Tests
+# next.js
+/.next/
+/out/
 
-includes/**/tests/
-build/
-coverage/
-phpunit.xml
-.phpunit.result.cache
-.phpunit.cache
-tests/yourls-tests-config.php
-tests/vendor/
-tests/data/auth/config-test-auth-hashed.php
-tests/data/htaccess/test*
+# production
+/build
 
-############
-## Environnement
-
-# Windows image file caches
-Thumbs.db
-# Folder config file
-Desktop.ini
-# Mac crap
+# misc
 .DS_Store
-# IDE files
-/nbproject/
-.idea
-.vs
-.vscode
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+/src/generated/prisma

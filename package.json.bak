@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@hashintel/refractive": "^0.0.3"
+  }
+}
