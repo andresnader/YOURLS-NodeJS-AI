@@ -1,71 +1,122 @@
+import { Suspense } from "react";
 import { Sparkles } from "lucide-react";
-import prisma from "@/lib/prisma";
 import ShortenForm from "@/components/ShortenForm";
-import LinkCard from "@/components/LinkCard";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import StatsBar from "@/components/StatsBar";
+import AdminLinkManager from "@/components/AdminLinkManager";
+import Bookmarklet from "@/components/Bookmarklet";
 import { LogoutButton } from "@/components/LogoutButton";
 
-export const revalidate = 0;
+export const dynamic = "force-dynamic";
 
-
-export default async function Home() {
-  const urls = await prisma.url.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 10
-  });
-
+export default function AdminPage() {
   return (
-    <main className="min-h-screen p-8 flex flex-col items-center relative overflow-hidden">
-      {/* Decorative ambient flares behind glass */}
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[var(--color-primary)]/20 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-[var(--color-primary-dim)]/20 blur-[120px] rounded-full pointer-events-none" />
+    <main className="min-h-screen relative overflow-hidden">
+      {/* Ambient decorative orbs */}
+      <div
+        className="fixed top-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full pointer-events-none z-0"
+        style={{
+          background: "radial-gradient(circle, rgba(0, 240, 255, 0.06) 0%, transparent 70%)",
+          animation: "floatOrb 25s ease-in-out infinite",
+        }}
+      />
+      <div
+        className="fixed bottom-[-15%] right-[-5%] w-[600px] h-[600px] rounded-full pointer-events-none z-0"
+        style={{
+          background: "radial-gradient(circle, rgba(168, 85, 247, 0.04) 0%, transparent 70%)",
+          animation: "floatOrb 30s ease-in-out infinite reverse",
+        }}
+      />
+      <div
+        className="fixed top-[40%] right-[20%] w-[300px] h-[300px] rounded-full pointer-events-none z-0"
+        style={{
+          background: "radial-gradient(circle, rgba(0, 240, 255, 0.03) 0%, transparent 70%)",
+          animation: "floatOrb 20s ease-in-out infinite 5s",
+        }}
+      />
 
-      {/* Navbar Minimalista */}
-      <nav className="w-full max-w-6xl flex justify-between items-center mb-16 relative z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl glass-panel flex items-center justify-center p-2">
-            <Sparkles className="text-[var(--color-primary)]" />
+      {/* Top Nav — sticky glass bar */}
+      <nav
+        className="sticky top-0 z-30 px-6 py-3"
+        style={{
+          background: "rgba(4, 6, 9, 0.6)",
+          backdropFilter: "blur(24px) saturate(1.5)",
+          WebkitBackdropFilter: "blur(24px) saturate(1.5)",
+          borderBottom: "1px solid var(--border-glass)",
+        }}
+      >
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center"
+              style={{
+                background: "linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(168, 85, 247, 0.1))",
+                border: "1px solid rgba(0, 240, 255, 0.2)",
+                boxShadow: "0 0 20px -5px rgba(0, 240, 255, 0.2)",
+              }}
+            >
+              <Sparkles size={16} style={{ color: "#00F0FF" }} />
+            </div>
+            <h1 className="text-lg font-extrabold tracking-widest" style={{ color: "var(--text-primary)" }}>
+              YOURLS<span style={{ color: "#00F0FF" }}>Node</span>
+            </h1>
           </div>
-          <h1 className="text-2xl font-bold tracking-widest dark:text-white/90 text-gray-800">REFRACT<span className="text-[var(--color-primary)]">_O</span></h1>
-        </div>
-        
-        <div className="flex items-center gap-4">
-             <ThemeToggle />
-             <LogoutButton />
+          <div className="flex items-center gap-2">
+            <LogoutButton />
+          </div>
         </div>
       </nav>
 
-      {/* Hero Section & Input */}
-      <section className="w-full max-w-3xl flex flex-col items-center text-center mb-24 relative z-10">
-        <h2 className="text-5xl font-extrabold mb-6 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/50">
-          Supercharge your Links
-        </h2>
-        <p className="text-gray-400 mb-10 text-lg">Shorten, track, and manage your URLs through a stunning refractive experience.</p>
-        
-        <ShortenForm />
-      </section>
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8 relative z-10">
+        {/* Stats */}
+        <StatsBar />
 
-      {/* Analytics & Link List */}
-      <section className="w-full max-w-6xl relative z-10">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-2xl font-bold text-white/80">Recent Transmissions</h3>
-          <button className="text-sm font-medium text-[var(--color-primary)] hover:text-white transition-colors">
-            View Vault →
-          </button>
-        </div>
+        {/* Shorten Form */}
+        <section>
+          <h2
+            className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-3"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Shorten a URL
+          </h2>
+          <ShortenForm />
+        </section>
 
-        <div className="flex flex-col gap-4">
-          {urls.length === 0 ? (
-            <div className="text-center text-gray-500 py-10 glass-panel rounded-2xl">
-              No links shortened yet.
-            </div>
-          ) : (
-            urls.map((urlItem) => (
-              <LinkCard key={urlItem.keyword} urlItem={urlItem} />
-            ))
-          )}
-        </div>
-      </section>
+        {/* Links */}
+        <section>
+          <h2
+            className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-4"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Your Transmissions
+          </h2>
+          <Suspense
+            fallback={
+              <div className="glass rounded-2xl p-12 text-center">
+                <div
+                  className="animate-spin h-8 w-8 border-2 border-t-transparent rounded-full mx-auto"
+                  style={{ borderColor: "#00F0FF", borderTopColor: "transparent" }}
+                />
+              </div>
+            }
+          >
+            <AdminLinkManager />
+          </Suspense>
+        </section>
+
+        {/* Tools */}
+        <section>
+          <h2
+            className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-3"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Tools
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Bookmarklet />
+          </div>
+        </section>
+      </div>
     </main>
   );
 }

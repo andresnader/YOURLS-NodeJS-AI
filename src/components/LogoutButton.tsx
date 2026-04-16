@@ -8,8 +8,8 @@ export function LogoutButton() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth', { method: 'DELETE' });
-      router.push('/login');
+      await fetch("/api/auth", { method: "DELETE" });
+      router.push("/login");
       router.refresh();
     } catch (e) {
       console.error("Logout error", e);
@@ -17,12 +17,27 @@ export function LogoutButton() {
   };
 
   return (
-    <button 
+    <button
       onClick={handleLogout}
-      title="Cerrar Sessión"
-      className="w-10 h-10 flex items-center justify-center rounded-xl glass-panel transition-all hover:bg-red-500 hover:text-white hover:border-red-500 dark:hover:bg-red-500 dark:hover:border-red-500"
+      title="Logout"
+      className="w-9 h-9 flex items-center justify-center rounded-lg transition-all"
+      style={{
+        background: "var(--glass-bg-light)",
+        border: "1px solid var(--border-glass)",
+        color: "var(--text-muted)",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "rgba(248, 113, 113, 0.3)";
+        e.currentTarget.style.color = "var(--color-danger)";
+        e.currentTarget.style.background = "rgba(248, 113, 113, 0.08)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "var(--border-glass)";
+        e.currentTarget.style.color = "var(--text-muted)";
+        e.currentTarget.style.background = "var(--glass-bg-light)";
+      }}
     >
-      <LogOut size={18} />
+      <LogOut size={15} />
     </button>
   );
 }

@@ -1,22 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-import { Providers } from "@/components/Providers";
+import { ToastProvider } from "@/components/Toast";
 
 export const metadata: Metadata = {
-  title: "YOURLS Node Admin",
-  description: "Advanced URL Shortener Admin Dashboard",
+  title: "YOURLS Node — Refractive URL Shortener",
+  description: "Your Own URL Shortener — Powerful self-hosted link management with analytics, built on Node.js",
+  icons: { icon: "/favicon.ico" },
 };
 
 export default function RootLayout({
@@ -25,15 +14,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
-        <Providers attribute="class" defaultTheme="dark" enableSystem>
+    <html lang="en" className="h-full antialiased">
+      <body className="min-h-full flex flex-col relative">
+        <ToastProvider>
           {children}
-        </Providers>
+        </ToastProvider>
       </body>
     </html>
   );
