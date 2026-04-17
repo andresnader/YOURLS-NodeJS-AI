@@ -9,13 +9,15 @@ datasource db {
 }
 
 model Url {
-  keyword   String   @id
-  url       String
-  title     String?
-  createdAt DateTime @default(now())
-  ip        String?
-  clicks    Int      @default(0)
-  logs      Log[]
+  keyword      String   @id
+  url          String
+  title        String?
+  createdAt    DateTime @default(now())
+  ip           String?
+  clicks       Int      @default(0)
+  redirectType Int      @default(301) // 301 (Permanent) or 302 (Temporary)
+  password     String?  // Optional password for the link
+  logs         Log[]
 }
 
 model Log {
@@ -27,6 +29,9 @@ model Log {
   userAgent   String?
   ipAddress   String?
   countryCode String?
+  browser     String?
+  os          String?
+  device      String?
 }
 
 model Option {

@@ -28,6 +28,7 @@ export default function PublicShortenForm() {
         body: JSON.stringify({
           url,
           customKeyword: customKeyword || undefined,
+          redirectType: 302 // Default to 302 for public usage for SEO safety
         }),
       });
 

@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { nanoid } from 'nanoid';
+import { isBlacklisted } from '@/lib/blacklist';
 
-// Utility: fetch the <title> from a URL
+// List of reserved keywords to prevent users from overriding system routes
+const RESERVED_KEYWORDS = [
+  'admin', 'api', 'login', 'stats', 'protected', 'auth', 'export', 
+  'dashboard', 'config', 'settings', 'public', 'css', 'js', 'images', 'favicon.ico'
+];
+
 async function fetchPageTitle(url: string): Promise<string | null> {
   try {
     const controller = new AbortController();
@@ -20,23 +26,25 @@ async function fetchPageTitle(url: string): Promise<string | null> {
   }
 }
 
-// POST — Create a new shortened URL
 export async function POST(request: Request) {
   try {
-    const { url, customKeyword, title } = await request.json();
+    const { url, customKeyword, title, redirectType } = await request.json();
 
     if (!url) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
     }
 
-    // Validate URL format
     try {
       new URL(url);
     } catch {
       return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
     }
 
-    // Determine keyword
+    // Check domain blacklist
+    if (isBlacklisted(url)) {
+      return NextResponse.json({ error: 'This domain is blacklisted due to security reasons' }, { status: 403 });
+    }
+
     const keyword = customKeyword && customKeyword.trim() !== ''
       ? customKeyword.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '')
       : nanoid(6);
@@ -45,7 +53,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid keyword' }, { status: 400 });
     }
 
-    // Check if keyword exists
+    // Check reserved keywords
+    if (RESERVED_KEYWORDS.includes(keyword)) {
+      return NextResponse.json({ error: 'Keyword is reserved for system use' }, { status: 400 });
+    }
+
     const existing = await prisma.url.findUnique({
       where: { keyword }
     });
@@ -54,19 +66,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Keyword already in use' }, { status: 409 });
     }
 
-    // Auto-fetch title if not provided
     let finalTitle = title?.trim() || null;
     if (!finalTitle) {
       finalTitle = await fetchPageTitle(url);
     }
 
-    // Create the new shortened URL
     const newUrl = await prisma.url.create({
       data: {
         keyword,
         url,
         title: finalTitle,
-        ip: request.headers.get('x-forwarded-for') || '127.0.0.1'
+        redirectType: redirectType === 301 ? 301 : 302, // Default to 302 for safety if not specified
+        ip: request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
       }
     });
 
@@ -77,7 +88,6 @@ export async function POST(request: Request) {
   }
 }
 
-// GET — List all URLs with search and pagination
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -125,7 +135,6 @@ export async function GET(request: Request) {
   }
 }
 
-// DELETE — Bulk delete
 export async function DELETE(request: Request) {
   try {
     const { keywords } = await request.json();

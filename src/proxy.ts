@@ -1,27 +1,53 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { rateLimit } from './lib/rate-limit';
 
-// Named export as required by Next.js 16 (proxy convention)
+const limiter = rateLimit({
+  id: 'api-public-shorten',
+  limit: 10, // 10 requests
+  windowMs: 60 * 1000 // per 1 minute
+});
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const sessionCookie = request.cookies.get('yourls_session');
+  const isAuthenticated = sessionCookie?.value === 'authenticated';
 
-  // Protect the /admin routes
-  if (pathname.startsWith('/admin')) {
-    const sessionCookie = request.cookies.get('yourls_session');
-
-    if (!sessionCookie || sessionCookie.value !== 'authenticated') {
-      const loginUrl = new URL('/login', request.url);
-      return NextResponse.redirect(loginUrl);
+  // 1. Rate Limiting for Public Shorten API
+  if (pathname === '/api/shorten' && request.method === 'POST') {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || request.headers.get('x-real-ip') || '127.0.0.1';
+    const { success, remaining, reset } = limiter.check(ip);
+    
+    if (!success) {
+      return NextResponse.json(
+        { error: 'System busy. Level 429: Rate limit exceeded.' },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': '10',
+            'X-RateLimit-Remaining': remaining.toString(),
+            'X-RateLimit-Reset': reset.toString()
+          }
+        }
+      );
     }
   }
 
-  // Protect API mutation routes (POST, PATCH, DELETE on /api/shorten, /api/export)
-  if (pathname.startsWith('/api/shorten') || pathname.startsWith('/api/export') || pathname.startsWith('/api/stats')) {
-    // Allow GET requests without auth (for public API reads if needed later)
-    // For now, protect all methods
-    const sessionCookie = request.cookies.get('yourls_session');
-    if (!sessionCookie || sessionCookie.value !== 'authenticated') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // 2. Auth Protection for Admin Routes
+  if (pathname.startsWith('/admin')) {
+    if (!isAuthenticated) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+  }
+
+  // 3. Auth Protection for sensitive API routes
+  // Allow POST to /api/shorten (Public usage)
+  // Protect everything else (GET links list, DELETE, Export)
+  const isPublicApi = pathname === '/api/shorten' && request.method === 'POST';
+  
+  if (pathname.startsWith('/api') && !isPublicApi) {
+    if (!isAuthenticated) {
+      return NextResponse.json({ error: 'Authentication required for network protocol access.' }, { status: 401 });
     }
   }
 
@@ -29,5 +55,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/shorten/:path*', '/api/stats/:path*', '/api/export/:path*'],
+  matcher: ['/admin/:path*', '/api/:path*'],
 };

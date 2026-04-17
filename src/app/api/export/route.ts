@@ -1,35 +1,41 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-// GET — Export all URLs as CSV
 export async function GET() {
   try {
     const urls = await prisma.url.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: 'desc' }
     });
 
-    // Build CSV
-    const headers = ['Keyword', 'URL', 'Title', 'Clicks', 'Created At', 'IP'];
-    const rows = urls.map(u => [
-      u.keyword,
-      `"${u.url.replace(/"/g, '""')}"`,
-      `"${(u.title || '').replace(/"/g, '""')}"`,
-      u.clicks.toString(),
-      u.createdAt.toISOString(),
-      u.ip || '',
+    if (urls.length === 0) {
+      return NextResponse.json({ error: 'No data to export' }, { status: 404 });
+    }
+
+    // CSV Headers
+    const headers = ['Keyword', 'Long URL', 'Title', 'Created At', 'Clicks', 'Redirect Type', 'IP'];
+    const rows = urls.map(url => [
+      url.keyword,
+      `"${url.url.replace(/"/g, '""')}"`, // Escape quotes
+      `"${(url.title || '').replace(/"/g, '""')}"`,
+      url.createdAt.toISOString(),
+      url.clicks,
+      url.redirectType,
+      url.ip || ''
     ]);
 
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
 
-    return new NextResponse(csv, {
-      status: 200,
+    return new NextResponse(csvContent, {
       headers: {
-        'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': `attachment; filename="yourls-export-${new Date().toISOString().split('T')[0]}.csv"`,
-      },
+        'Content-Type': 'text/csv',
+        'Content-Disposition': 'attachment; filename=yourls-export.csv'
+      }
     });
   } catch (error) {
-    console.error('Error exporting:', error);
+    console.error('Error exporting data:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

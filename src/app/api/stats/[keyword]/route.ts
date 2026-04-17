@@ -1,85 +1,75 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-// GET — Per-link analytics
-export async function GET(request: Request, context: { params: Promise<{ keyword: string }> }) {
+export async function GET(
+  request: Request,
+  context: { params: Promise<{ keyword: string }> }
+) {
   const params = await context.params;
+  const keyword = params.keyword;
+
   try {
-    const urlEntry = await prisma.url.findUnique({
-      where: { keyword: params.keyword },
+    const url = await prisma.url.findUnique({
+      where: { keyword },
+      include: {
+        logs: {
+          orderBy: { clickedAt: 'desc' },
+          take: 1000 // Limit for performance
+        }
+      }
     });
 
-    if (!urlEntry) {
+    if (!url) {
       return NextResponse.json({ error: 'URL not found' }, { status: 404 });
     }
 
-    // Get all logs for this URL
-    const logs = await prisma.log.findMany({
-      where: { shorturl: params.keyword },
-      orderBy: { clickedAt: 'desc' },
+    // Process statistics
+    // 1. Clicks over time (last 7 days)
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return d.toISOString().split('T')[0];
+    }).reverse();
+
+    const timeSeries = last7Days.reduce((acc, date) => {
+      acc[date] = 0;
+      return acc;
+    }, {} as Record<string, number>);
+
+    url.logs.forEach(log => {
+      const date = log.clickedAt.toISOString().split('T')[0];
+      if (timeSeries[date] !== undefined) {
+        timeSeries[date]++;
+      }
     });
 
-    // Referrer breakdown
-    const referrerMap: Record<string, number> = {};
-    const browserMap: Record<string, number> = {};
-    const dailyMap: Record<string, number> = {};
+    // 2. Browser distribution
+    const browsers: Record<string, number> = {};
+    const os: Record<string, number> = {};
+    const devices: Record<string, number> = {};
+    const countries: Record<string, number> = {};
 
-    for (const log of logs) {
-      // Referrers
-      const ref = log.referrer || 'Direct';
-      referrerMap[ref] = (referrerMap[ref] || 0) + 1;
-
-      // Browsers (simplified)
-      const ua = log.userAgent || 'Unknown';
-      let browser = 'Other';
-      if (ua.includes('Chrome') && !ua.includes('Edg')) browser = 'Chrome';
-      else if (ua.includes('Firefox')) browser = 'Firefox';
-      else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
-      else if (ua.includes('Edg')) browser = 'Edge';
-      else if (ua.includes('Opera') || ua.includes('OPR')) browser = 'Opera';
-      browserMap[browser] = (browserMap[browser] || 0) + 1;
-
-      // Daily clicks (last 30 days)
-      const day = log.clickedAt.toISOString().split('T')[0];
-      dailyMap[day] = (dailyMap[day] || 0) + 1;
-    }
-
-    // Convert maps to sorted arrays
-    const referrers = Object.entries(referrerMap)
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
-
-    const browsers = Object.entries(browserMap)
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count);
-
-    // Last 30 days daily data
-    const dailyClicks = Object.entries(dailyMap)
-      .map(([date, count]) => ({ date, count }))
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .slice(-30);
-
-    // Recent logs
-    const recentLogs = logs.slice(0, 20).map(log => ({
-      id: log.id,
-      clickedAt: log.clickedAt,
-      referrer: log.referrer || 'Direct',
-      userAgent: log.userAgent,
-      ipAddress: log.ipAddress,
-      countryCode: log.countryCode,
-    }));
+    url.logs.forEach(log => {
+      browsers[log.browser || 'Unknown'] = (browsers[log.browser || 'Unknown'] || 0) + 1;
+      os[log.os || 'Unknown'] = (os[log.os || 'Unknown'] || 0) + 1;
+      devices[log.device || 'desktop'] = (devices[log.device || 'desktop'] || 0) + 1;
+      if (log.countryCode) {
+        countries[log.countryCode] = (countries[log.countryCode] || 0) + 1;
+      }
+    });
 
     return NextResponse.json({
-      url: urlEntry,
-      totalClicks: urlEntry.clicks,
-      referrers,
+      keyword: url.keyword,
+      longUrl: url.url,
+      totalClicks: url.clicks,
+      timeSeries,
       browsers,
-      dailyClicks,
-      recentLogs,
+      os,
+      devices,
+      countries
     });
   } catch (error) {
-    console.error('Error fetching URL stats:', error);
+    console.error('Error fetching detailed stats:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

@@ -11,6 +11,8 @@ export default function ShortenForm() {
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [redirectType, setRedirectType] = useState<301 | 302>(301);
+  const [password, setPassword] = useState("");
   const router = useRouter();
   const { toast } = useToast();
 
@@ -27,6 +29,8 @@ export default function ShortenForm() {
           url,
           customKeyword: customKeyword || undefined,
           title: title || undefined,
+          redirectType,
+          password: password || undefined,
         }),
       });
 
@@ -44,6 +48,8 @@ export default function ShortenForm() {
         setUrl("");
         setCustomKeyword("");
         setTitle("");
+        setPassword("");
+        setRedirectType(301);
         setShowAdvanced(false);
         
         // Dispatch instant update event
@@ -141,7 +147,7 @@ export default function ShortenForm() {
         {/* Advanced options */}
         {showAdvanced && (
           <div
-            className="mt-2 p-5 rounded-xl grid grid-cols-1 sm:grid-cols-2 gap-4 animate-slide-down glass-subtle"
+            className="mt-2 p-5 rounded-xl grid grid-cols-1 sm:grid-cols-2 gap-4 animate-slide-down glass-subtle shadow-inner"
           >
             <div>
               <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "var(--text-muted)" }}>
@@ -152,20 +158,53 @@ export default function ShortenForm() {
                 value={customKeyword}
                 onChange={(e) => setCustomKeyword(e.target.value)}
                 placeholder="my-custom-slug"
-                pattern="[a-zA-Z0-9_-]+"
-                title="Letters, numbers, dashes and underscores only"
                 className="input-glass text-sm"
               />
             </div>
             <div>
               <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "var(--text-muted)" }}>
-                Title (auto-fetched)
+                Title
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="My awesome page"
+                placeholder="Auto-fetched if empty"
+                className="input-glass text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "var(--text-muted)" }}>
+                Redirection Protocol
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRedirectType(301)}
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${redirectType === 301 ? 'bg-[#00F0FF]/20 border-[#00F0FF]/40 text-[#00F0FF]' : 'bg-white/5 border-white/10 text-white/40'}`}
+                  style={{ border: '1px solid' }}
+                >
+                  301 (Permanent)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRedirectType(302)}
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${redirectType === 302 ? 'bg-[#00F0FF]/20 border-[#00F0FF]/40 text-[#00F0FF]' : 'bg-white/5 border-white/10 text-white/40'}`}
+                  style={{ border: '1px solid' }}
+                >
+                  302 (Found)
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "var(--text-muted)" }}>
+                Password Lock (Optional)
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Access key"
                 className="input-glass text-sm"
               />
             </div>
