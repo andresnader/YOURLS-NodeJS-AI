@@ -20,6 +20,23 @@ export default function StatsBar() {
       .catch(() => {});
   }, []);
 
+  // Instant update stats when a new link is created
+  useEffect(() => {
+    const handleLinkCreated = () => {
+      setStats(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          totalLinks: prev.totalLinks + 1,
+          linksToday: prev.linksToday + 1
+        };
+      });
+    };
+
+    window.addEventListener('link-created', handleLinkCreated);
+    return () => window.removeEventListener('link-created', handleLinkCreated);
+  }, []);
+
   const items = [
     {
       label: "Total Links",

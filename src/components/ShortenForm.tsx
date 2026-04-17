@@ -45,6 +45,12 @@ export default function ShortenForm() {
         setCustomKeyword("");
         setTitle("");
         setShowAdvanced(false);
+        
+        // Dispatch instant update event
+        window.dispatchEvent(new CustomEvent('link-created', { 
+          detail: data.data 
+        }));
+
         router.refresh();
       } else {
         const errorData = await res.json();

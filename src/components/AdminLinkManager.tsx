@@ -70,6 +70,23 @@ export default function AdminLinkManager() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
+  // Instant update when a new link is created
+  useEffect(() => {
+    const handleLinkCreated = (e: Event) => {
+      const customEvent = e as CustomEvent<UrlItem>;
+      if (customEvent.detail) {
+        setUrls(prev => [customEvent.detail, ...prev]);
+        setPagination(prev => ({
+          ...prev,
+          total: prev.total + 1
+        }));
+      }
+    };
+
+    window.addEventListener('link-created', handleLinkCreated);
+    return () => window.removeEventListener('link-created', handleLinkCreated);
+  }, []);
+
   const handlePageChange = (page: number) => {
     fetchUrls(page);
   };
