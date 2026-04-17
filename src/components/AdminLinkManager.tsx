@@ -12,6 +12,8 @@ interface UrlItem {
   keyword: string;
   url: string;
   title: string | null;
+  favicon: string | null;
+  isHealthy: boolean;
   clicks: number;
   createdAt: string;
 }
