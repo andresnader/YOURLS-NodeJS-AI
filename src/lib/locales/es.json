@@ -1,0 +1,42 @@
+{
+  "common": {
+    "dashboard": "Panel de Control",
+    "stats": "Estadísticas Globales",
+    "settings": "Configuración",
+    "logout": "Cerrar Sesión",
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "success": "Éxito",
+    "error": "Error"
+  },
+  "admin": {
+    "title": "Administración",
+    "new_link": "Crear Nuevo Vínculo",
+    "all_links": "Todas las transmisiones acortadas",
+    "clicks": "Clics",
+    "keyword": "Palabra clave",
+    "url": "URL Destino",
+    "date": "Fecha de Creación",
+    "actions": "Acciones"
+  },
+  "settings": {
+    "title": "Configuración del Sistema",
+    "subtitle": "Gestione sus parámetros del motor refractivo y protocolos de seguridad.",
+    "general": "Ajustes Generales",
+    "appearance": "Apariencia",
+    "security": "Seguridad",
+    "users": "Gestión de Usuarios",
+    "app_name": "Nombre del Aplicativo",
+    "language": "Idioma",
+    "mode": "Modo de Tema",
+    "dark": "Oscuro",
+    "light": "Claro",
+    "change_password": "Cambiar Contraseña",
+    "create_user": "Crear Usuario",
+    "health_check": "Revisión de Salud",
+    "metadata": "Extracción de Metadatos"
+  }
+}

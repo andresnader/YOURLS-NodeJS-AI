@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { nanoid } from 'nanoid';
 import { isBlacklisted } from '@/lib/blacklist';
+import { fetchMetadata } from '@/lib/metadata';
+import { getSession } from '@/lib/session';
 
 // List of reserved keywords to prevent users from overriding system routes
 const RESERVED_KEYWORDS = [
@@ -9,25 +11,9 @@ const RESERVED_KEYWORDS = [
   'dashboard', 'config', 'settings', 'public', 'css', 'js', 'images', 'favicon.ico'
 ];
 
-async function fetchPageTitle(url: string): Promise<string | null> {
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(url, {
-      signal: controller.signal,
-      headers: { 'User-Agent': 'YOURLS-Node/1.0 (+link-preview)' },
-    });
-    clearTimeout(timeout);
-    const html = await res.text();
-    const match = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-    return match ? match[1].trim().substring(0, 200) : null;
-  } catch {
-    return null;
-  }
-}
-
 export async function POST(request: Request) {
   try {
+    const session = await getSession();
     const { url, customKeyword, title, redirectType } = await request.json();
 
     if (!url) {
@@ -66,17 +52,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Keyword already in use' }, { status: 409 });
     }
 
-    let finalTitle = title?.trim() || null;
-    if (!finalTitle) {
-      finalTitle = await fetchPageTitle(url);
-    }
+    // Fetch Metadata if not provided
+    const metadata = await fetchMetadata(url);
+    const finalTitle = title?.trim() || metadata.title || null;
+    const finalFavicon = metadata.favicon || null;
 
     const newUrl = await prisma.url.create({
       data: {
         keyword,
         url,
         title: finalTitle,
-        redirectType: redirectType === 301 ? 301 : 302, // Default to 302 for safety if not specified
+        favicon: finalFavicon,
+        redirectType: redirectType === 301 ? 301 : 302,
+        userId: session?.id || null, // Associate with user if logged in
         ip: request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
       }
     });
@@ -90,6 +78,7 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
+    const session = await getSession();
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20')));
@@ -100,15 +89,19 @@ export async function GET(request: Request) {
     const validSortFields = ['createdAt', 'clicks', 'keyword', 'url'];
     const finalSort = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
 
-    const where = search
-      ? {
-          OR: [
-            { keyword: { contains: search } },
-            { url: { contains: search } },
-            { title: { contains: search } },
-          ],
-        }
-      : {};
+    // Multitenancy: Filter by userId unless admin
+    const where: any = {};
+    if (session && session.role !== 'ADMIN') {
+      where.userId = session.id;
+    }
+
+    if (search) {
+      where.OR = [
+        { keyword: { contains: search, mode: 'insensitive' } },
+        { url: { contains: search, mode: 'insensitive' } },
+        { title: { contains: search, mode: 'insensitive' } },
+      ];
+    }
 
     const [urls, total] = await Promise.all([
       prisma.url.findMany({
@@ -137,18 +130,26 @@ export async function GET(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const session = await getSession();
     const { keywords } = await request.json();
     if (!Array.isArray(keywords) || keywords.length === 0) {
       return NextResponse.json({ error: 'Keywords array is required' }, { status: 400 });
     }
 
-    await prisma.url.deleteMany({
-      where: { keyword: { in: keywords } }
+    // Security check: must own the links or be admin
+    const deleteWhere: any = { keyword: { in: keywords } };
+    if (session && session.role !== 'ADMIN') {
+      deleteWhere.userId = session.id;
+    }
+
+    const result = await prisma.url.deleteMany({
+      where: deleteWhere
     });
 
-    return NextResponse.json({ success: true, deleted: keywords.length });
+    return NextResponse.json({ success: true, deleted: result.count });
   } catch (error) {
     console.error('Error bulk deleting:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+

@@ -1,0 +1,42 @@
+{
+  "common": {
+    "dashboard": "Dashboard",
+    "stats": "Global Stats",
+    "settings": "Configuration",
+    "logout": "Logout",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "success": "Success",
+    "error": "Error"
+  },
+  "admin": {
+    "title": "Administration",
+    "new_link": "Create New Link",
+    "all_links": "All shortened transmissions",
+    "clicks": "Clicks",
+    "keyword": "Keyword",
+    "url": "Target URL",
+    "date": "Created Date",
+    "actions": "Actions"
+  },
+  "settings": {
+    "title": "System Configuration",
+    "subtitle": "Manage your refractive engine parameters and security protocols.",
+    "general": "General Settings",
+    "appearance": "Appearance",
+    "security": "Security",
+    "users": "User Management",
+    "app_name": "Application Name",
+    "language": "Language",
+    "mode": "Theme Mode",
+    "dark": "Dark",
+    "light": "Light",
+    "change_password": "Change Password",
+    "create_user": "Create User",
+    "health_check": "Health Check",
+    "metadata": "Metadata Extraction"
+  }
+}

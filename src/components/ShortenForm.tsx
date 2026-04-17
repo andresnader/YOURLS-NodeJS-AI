@@ -1,9 +1,10 @@
 "use client";
 
-import { Link2, Zap } from "lucide-react";
+import { Link2, Zap, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "./Toast";
+import { useTranslation } from "@/lib/LanguageContext";
 
 export default function ShortenForm() {
   const [url, setUrl] = useState("");
@@ -15,6 +16,7 @@ export default function ShortenForm() {
   const [password, setPassword] = useState("");
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,9 +42,9 @@ export default function ShortenForm() {
 
         try {
           await navigator.clipboard.writeText(shortUrl);
-          toast(`Transmission created & copied: ${shortUrl}`, "success");
+          toast(t("common.success"), "success");
         } catch {
-          toast(`Transmission created: ${shortUrl}`, "success");
+          toast(t("common.success"), "success");
         }
 
         setUrl("");
@@ -60,10 +62,10 @@ export default function ShortenForm() {
         router.refresh();
       } else {
         const errorData = await res.json();
-        toast(errorData.error || "Failed to shorten URL", "error");
+        toast(errorData.error || t("common.error"), "error");
       }
     } catch {
-      toast("Network error occurred", "error");
+      toast(t("common.error"), "error");
     } finally {
       setLoading(false);
     }
@@ -74,20 +76,9 @@ export default function ShortenForm() {
       <form onSubmit={handleSubmit} className="w-full">
         {/* Main input — glass pill */}
         <div
-          className="flex items-center gap-2 p-2 rounded-full transition-all glass"
-          style={{
-            boxShadow: "var(--shadow-card)",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = "rgba(0, 240, 255, 0.2)";
-            e.currentTarget.style.boxShadow = "0 0 40px -10px rgba(0, 240, 255, 0.15), var(--shadow-card)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = "var(--border-glass)";
-            e.currentTarget.style.boxShadow = "var(--shadow-card)";
-          }}
+          className="flex items-center gap-2 p-2 rounded-2xl md:rounded-full transition-all glass shadow-glow-sm"
         >
-          <div className="pl-4" style={{ color: "var(--text-muted)" }}>
+          <div className="pl-4 text-muted">
             <Link2 size={20} />
           </div>
           <input
@@ -95,27 +86,23 @@ export default function ShortenForm() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             required
-            placeholder="Paste your long URL here…"
-            className="flex-1 bg-transparent border-none outline-none px-2 py-3 text-sm"
-            style={{ color: "var(--text-primary)" }}
+            placeholder={t("admin.paste_url")}
+            className="flex-1 bg-transparent border-none outline-none px-2 py-3 text-sm text-primary"
           />
           <button
             type="submit"
             disabled={loading}
-            className="btn-cyber rounded-full px-7 py-3 text-sm whitespace-nowrap"
+            className="btn-cyber rounded-2xl md:rounded-full px-7 py-3 text-sm whitespace-nowrap min-w-[140px]"
           >
             {loading ? (
               <span className="flex items-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5 0 0 5 0 12h4zm2 5.3a8 8 0 01-1.9-2.6H0c.5 1.5 1.3 2.8 2.3 3.9l3.7-1.3z" />
-                </svg>
-                Transmitting…
+                <Loader2 className="animate-spin h-4 w-4" />
+                {t("admin.shortening")}
               </span>
             ) : (
               <span className="flex items-center gap-1.5">
                 <Zap size={15} />
-                Shorten
+                {t("admin.shorten_now")}
               </span>
             )}
           </button>
@@ -126,85 +113,74 @@ export default function ShortenForm() {
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="text-[11px] font-medium px-4 py-1.5 rounded-full transition-all"
-            style={{
-              color: "var(--text-muted)",
-              border: "1px solid transparent",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = "#00F0FF";
-              e.currentTarget.style.borderColor = "var(--border-glass)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = "var(--text-muted)";
-              e.currentTarget.style.borderColor = "transparent";
-            }}
+            className="text-[11px] font-bold uppercase tracking-widest px-6 py-2 rounded-full transition-all text-muted hover:text-primary hover:bg-white/5"
           >
-            {showAdvanced ? "▲ Hide options" : "▼ Advanced options"}
+            <span className="flex items-center gap-2">
+               {showAdvanced ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
+               {showAdvanced ? t("admin.hide_options") : t("admin.advanced_options")}
+            </span>
           </button>
         </div>
 
         {/* Advanced options */}
         {showAdvanced && (
           <div
-            className="mt-2 p-5 rounded-xl grid grid-cols-1 sm:grid-cols-2 gap-4 animate-slide-down glass-subtle shadow-inner"
+            className="mt-4 p-6 rounded-3xl grid grid-cols-1 md:grid-cols-2 gap-6 animate-slide-up glass-subtle transition-colors duration-300"
           >
-            <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "var(--text-muted)" }}>
-                Custom slug
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted pl-1">
+                {t("admin.custom_slug")}
               </label>
               <input
                 type="text"
                 value={customKeyword}
                 onChange={(e) => setCustomKeyword(e.target.value)}
-                placeholder="my-custom-slug"
+                placeholder="my-link-2024"
                 className="input-glass text-sm"
               />
             </div>
-            <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "var(--text-muted)" }}>
-                Title
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted pl-1">
+                {t("admin.custom_title")}
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Auto-fetched if empty"
+                placeholder={t("admin.auto_metadata")}
                 className="input-glass text-sm"
               />
             </div>
-            <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "var(--text-muted)" }}>
-                Redirection Protocol
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted pl-1">
+                Redirect Protocol
               </label>
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => setRedirectType(301)}
-                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${redirectType === 301 ? 'bg-[#00F0FF]/20 border-[#00F0FF]/40 text-[#00F0FF]' : 'bg-white/5 border-white/10 text-white/40'}`}
-                  style={{ border: '1px solid' }}
+                  className={`flex-1 py-3 rounded-2xl text-[10px] font-bold tracking-widest transition-all border ${redirectType === 301 ? 'bg-primary/20 border-primary shadow-glow-sm text-primary' : 'bg-white/5 border-white/10 text-muted'}`}
                 >
-                  301 (Permanent)
+                  301 PERMANENT
                 </button>
                 <button
                   type="button"
                   onClick={() => setRedirectType(302)}
-                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${redirectType === 302 ? 'bg-[#00F0FF]/20 border-[#00F0FF]/40 text-[#00F0FF]' : 'bg-white/5 border-white/10 text-white/40'}`}
-                  style={{ border: '1px solid' }}
+                  className={`flex-1 py-3 rounded-2xl text-[10px] font-bold tracking-widest transition-all border ${redirectType === 302 ? 'bg-primary/20 border-primary shadow-glow-sm text-primary' : 'bg-white/5 border-white/10 text-muted'}`}
                 >
-                  302 (Found)
+                  302 TEMPORARY
                 </button>
               </div>
             </div>
-            <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "var(--text-muted)" }}>
-                Password Lock (Optional)
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted pl-1">
+                Password Lock
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Access key"
+                placeholder="••••••••"
                 className="input-glass text-sm"
               />
             </div>
@@ -214,3 +190,4 @@ export default function ShortenForm() {
     </div>
   );
 }
+

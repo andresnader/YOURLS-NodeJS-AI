@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Link2, MousePointerClick, TrendingUp, Zap } from "lucide-react";
+import { useTranslation } from "@/lib/LanguageContext";
 
 interface Stats {
   totalLinks: number;
@@ -12,6 +13,7 @@ interface Stats {
 
 export default function StatsBar() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     fetch("/api/stats")
@@ -39,64 +41,60 @@ export default function StatsBar() {
 
   const items = [
     {
-      label: "Total Links",
+      label: t("stats.links"),
       value: stats?.totalLinks ?? "—",
       icon: Link2,
-      gradient: "linear-gradient(135deg, rgba(0, 240, 255, 0.12), rgba(0, 240, 255, 0.03))",
-      iconColor: "#00F0FF",
-      borderGlow: "rgba(0, 240, 255, 0.15)",
+      bg: "bg-primary/10",
+      iconColor: "text-primary",
+      borderGlow: "border-primary/20",
     },
     {
-      label: "Total Clicks",
+      label: t("stats.clicks"),
       value: stats?.totalClicks ?? "—",
       icon: MousePointerClick,
-      gradient: "linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(168, 85, 247, 0.03))",
-      iconColor: "#A855F7",
-      borderGlow: "rgba(168, 85, 247, 0.15)",
+      bg: "bg-accent/10",
+      iconColor: "text-accent",
+      borderGlow: "border-accent/20",
     },
     {
-      label: "Links Today",
+      label: t("stats.links_today"),
       value: stats?.linksToday ?? "—",
       icon: Zap,
-      gradient: "linear-gradient(135deg, rgba(52, 211, 153, 0.12), rgba(52, 211, 153, 0.03))",
-      iconColor: "#34D399",
-      borderGlow: "rgba(52, 211, 153, 0.15)",
+      bg: "bg-success/10",
+      iconColor: "text-success",
+      borderGlow: "border-success/20",
     },
     {
-      label: "Clicks Today",
+      label: t("stats.clicks_today"),
       value: stats?.clicksToday ?? "—",
       icon: TrendingUp,
-      gradient: "linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(251, 191, 36, 0.03))",
-      iconColor: "#FBBF24",
-      borderGlow: "rgba(251, 191, 36, 0.15)",
+      bg: "bg-amber-400/10",
+      iconColor: "text-amber-400",
+      borderGlow: "border-amber-400/20",
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full animate-fade-in">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full animate-fade-in transition-colors duration-300">
       {items.map((item, i) => (
         <div
           key={item.label}
-          className="glass glass-hover rounded-xl p-5 flex items-center gap-4"
+          className={`glass glass-hover rounded-2xl p-5 flex items-center gap-4 transition-all duration-300 ${item.borderGlow} border`}
           style={{
             animationDelay: `${i * 80}ms`,
             animationFillMode: "backwards",
           }}
         >
           <div
-            className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-            style={{
-              background: item.gradient,
-              border: `1px solid ${item.borderGlow}`,
-            }}
+            className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${item.bg}`}
           >
-            <item.icon size={20} style={{ color: item.iconColor }} />
+            <item.icon size={20} className={item.iconColor} />
           </div>
-          <div>
-            <p className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
+          <div className="min-w-0">
+            <p className="text-2xl font-bold text-primary truncate">
               {typeof item.value === "number" ? item.value.toLocaleString() : item.value}
             </p>
-            <p className="text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted truncate">
               {item.label}
             </p>
           </div>
@@ -105,3 +103,4 @@ export default function StatsBar() {
     </div>
   );
 }
+

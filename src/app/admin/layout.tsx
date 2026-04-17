@@ -3,51 +3,68 @@
 import { Sparkles, LayoutDashboard, Settings, BarChart3, LogOut, ChevronLeft, ChevronRight, Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LogoutButton } from "@/components/LogoutButton";
+import { useTranslation } from "@/lib/LanguageContext";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [appName, setAppName] = useState("YOURLS Node");
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then(res => res.json())
+      .then(data => {
+        if (data.app_name) setAppName(data.app_name);
+      })
+      .catch(console.error);
+  }, []);
 
   const menuItems = [
-    { name: "Dashboard", icon: LayoutDashboard, href: "/admin", color: "#00F0FF" },
-    { name: "Global Stats", icon: BarChart3, href: "/admin/stats", color: "#A855F7" },
-    { name: "Configuration", icon: Settings, href: "/admin/settings", color: "#FBBF24" },
+    { name: t("common.dashboard"), icon: LayoutDashboard, href: "/admin", color: "#00F0FF" },
+    { name: t("common.stats"), icon: BarChart3, href: "/admin/stats", color: "#A855F7" },
+    { name: t("common.settings"), icon: Settings, href: "/admin/settings", color: "#FBBF24" },
   ];
 
+  const logoParts = appName.split(" ");
+  const lastPart = logoParts.pop();
+  const firstPart = logoParts.join(" ");
+
   return (
-    <div className="min-h-screen flex bg-[#040609] text-white selection:bg-[#00F0FF]/30">
+    <div className="min-h-screen flex bg-void text-primary selection:bg-primary/30 transition-colors duration-300">
       {/* Background Orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full blur-[120px] opacity-20" style={{ background: "radial-gradient(circle, #00F0FF 0%, transparent 70%)" }} />
-        <div className="absolute bottom-[-15%] right-[-5%] w-[600px] h-[600px] rounded-full blur-[120px] opacity-10" style={{ background: "radial-gradient(circle, #A855F7 0%, transparent 70%)" }} />
+        <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full blur-[120px] opacity-20" style={{ background: "radial-gradient(circle, var(--color-primary) 0%, transparent 70%)" }} />
       </div>
 
       {/* Sidebar Desktop */}
       <aside 
         className={`hidden md:flex flex-col sticky top-0 h-screen transition-all duration-300 z-40 ${collapsed ? 'w-20' : 'w-72'}`}
         style={{
-          background: "rgba(4, 6, 9, 0.4)",
+          background: "var(--glass-bg)",
           backdropFilter: "blur(32px) saturate(1.8)",
-          borderRight: "1px solid rgba(255, 255, 255, 0.05)",
+          borderRight: "1px solid var(--border-glass)",
         }}
       >
         <div className="p-6 flex items-center justify-between">
           {!collapsed && (
             <div className="flex items-center gap-3 animate-fade-in">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center p-0.5" style={{ background: "linear-gradient(135deg, #00F0FF20, #A855F710)", border: "1px solid #00F0FF30" }}>
-                <Sparkles size={18} style={{ color: "#00F0FF" }} />
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center p-0.5" style={{ background: "linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(168, 85, 247, 0.1))", border: "1px solid var(--border-glow)" }}>
+                <Sparkles size={18} className="text-primary" />
               </div>
-              <span className="font-extrabold tracking-widest text-lg">YOURLS<span className="text-[#00F0FF]">Node</span></span>
+              <span className="font-extrabold tracking-widest text-lg">
+                {firstPart} <span className="text-primary">{lastPart}</span>
+              </span>
             </div>
           )}
-          {collapsed && <Sparkles size={24} style={{ color: "#00F0FF" }} className="mx-auto" />}
+          {collapsed && <Sparkles size={24} className="text-primary mx-auto" />}
           
           <button 
             onClick={() => setCollapsed(!collapsed)}
-            className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-[#00F0FF] text-black flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.4)] hover:scale-110 transition-transform"
+            className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-primary text-black flex items-center justify-center shadow-glow-sm hover:scale-110 transition-transform"
           >
             {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} /> }
           </button>
@@ -64,30 +81,55 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               >
                 <item.icon 
                   size={20} 
-                  style={{ color: active ? item.color : "var(--text-muted)" }} 
-                  className={`transition-colors ${!active && 'group-hover:text-white'}`}
+                  className={`transition-colors ${active ? '' : 'text-muted group-hover:text-primary'}`}
+                  style={{ color: active ? item.color : "" }}
                 />
                 {!collapsed && (
-                  <span className={`text-sm font-medium tracking-wide transition-all ${active ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}>
+                  <span className={`text-sm font-medium tracking-wide transition-all ${active ? 'text-primary' : 'text-secondary group-hover:text-primary'}`}>
                     {item.name}
                   </span>
                 )}
                 {active && (
-                  <div className="absolute right-0 w-1 h-6 rounded-l-full" style={{ background: item.color, boxShadow: `0 0 10px ${item.color}` }} />
+                  <div className="absolute right-0 w-1 h-6 rounded-l-full shadow-glow" style={{ background: item.color }} />
                 )}
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-white/5 pb-8">
+        <div className="p-4 border-t border-glass pb-8">
           <LogoutButton />
         </div>
       </aside>
 
       {/* Mobile Nav Toggle */}
+      <div className={`md:hidden fixed inset-0 bg-void/80 backdrop-blur-md z-50 transition-all ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+          <div className="flex flex-col h-full p-8 space-y-8">
+              <button 
+                className="self-end p-2"
+                onClick={() => setMobileOpen(false)}
+              >
+                  <ChevronLeft size={24} />
+              </button>
+              {menuItems.map(item => (
+                  <Link 
+                    key={item.href} 
+                    href={item.href} 
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-6 text-xl font-bold"
+                  >
+                      <item.icon size={28} style={{ color: item.color }} />
+                      {item.name}
+                  </Link>
+              ))}
+              <div className="pt-8 mt-auto border-t border-glass">
+                  <LogoutButton />
+              </div>
+          </div>
+      </div>
+
       <button 
-        className="md:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full bg-[#00F0FF] text-black shadow-2xl z-50 flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
+        className="md:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary text-black shadow-2xl z-50 flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
         onClick={() => setMobileOpen(!mobileOpen)}
       >
         <Menu size={24} />
@@ -96,10 +138,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Content Area */}
       <div className="flex-1 w-full relative z-10 flex flex-col">
         {/* Top bar for mobile/context */}
-        <header className="md:hidden px-6 py-4 flex items-center justify-between bg-[#040609]/80 backdrop-blur-md sticky top-0 z-30">
+        <header className="md:hidden px-6 py-4 flex items-center justify-between bg-void/80 backdrop-blur-md sticky top-0 z-30 border-b border-glass">
           <div className="flex items-center gap-2">
-            <Sparkles size={20} style={{ color: "#00F0FF" }} />
-            <span className="font-bold tracking-widest uppercase text-xs">YOURLS Node</span>
+            <Sparkles size={20} className="text-primary" />
+            <span className="font-bold tracking-widest uppercase text-xs">{appName}</span>
           </div>
           <LogoutButton />
         </header>
@@ -111,3 +153,4 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     </div>
   );
 }
+

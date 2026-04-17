@@ -1,26 +1,27 @@
+"use client";
+
 import { Suspense } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Loader2 } from "lucide-react";
 import ShortenForm from "@/components/ShortenForm";
 import StatsBar from "@/components/StatsBar";
 import AdminLinkManager from "@/components/AdminLinkManager";
 import Bookmarklet from "@/components/Bookmarklet";
-import { LogoutButton } from "@/components/LogoutButton";
-
-export const dynamic = "force-dynamic";
+import { useTranslation } from "@/lib/LanguageContext";
 
 export default function AdminPage() {
+  const { t } = useTranslation();
+
   return (
-    <div className="px-6 py-8 md:px-10 space-y-8 animate-fade-in relative z-10">
+    <div className="px-6 py-8 md:px-10 space-y-8 animate-fade-in relative z-10 transition-colors duration-300">
         {/* Stats */}
         <StatsBar />
 
         {/* Shorten Form */}
         <section>
           <h2
-            className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-3"
-            style={{ color: "var(--text-muted)" }}
+            className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-3 text-muted"
           >
-            Shorten a URL
+            {t("admin.new_link")}
           </h2>
           <ShortenForm />
         </section>
@@ -28,18 +29,14 @@ export default function AdminPage() {
         {/* Links */}
         <section>
           <h2
-            className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-4"
-            style={{ color: "var(--text-muted)" }}
+            className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-4 text-muted"
           >
-            Your Transmissions
+            {t("admin.all_links")}
           </h2>
           <Suspense
             fallback={
               <div className="glass rounded-2xl p-12 text-center">
-                <div
-                  className="animate-spin h-8 w-8 border-2 border-t-transparent rounded-full mx-auto"
-                  style={{ borderColor: "#00F0FF", borderTopColor: "transparent" }}
-                />
+                <Loader2 className="animate-spin h-8 w-8 text-primary mx-auto" />
               </div>
             }
           >
@@ -50,8 +47,7 @@ export default function AdminPage() {
         {/* Tools */}
         <section>
           <h2
-            className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-3"
-            style={{ color: "var(--text-muted)" }}
+            className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-3 text-muted"
           >
             Tools
           </h2>
@@ -62,3 +58,4 @@ export default function AdminPage() {
       </div>
   );
 }
+
