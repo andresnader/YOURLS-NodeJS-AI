@@ -3,7 +3,13 @@ import { NextResponse } from 'next/server';
 export async function POST(request: Request) {
   try {
     const { password } = await request.json();
-    const correctPassword = process.env.ADMIN_PASSWORD || 'admin'; // fallback
+    const correctPassword = process.env.ADMIN_PASSWORD || 'admin';
+
+    console.log('--- Auth Debug ---');
+    console.log('Received:', password);
+    console.log('Expected:', correctPassword);
+    console.log('Match:', password === correctPassword);
+    console.log('------------------');
 
     if (password === correctPassword) {
       // Set an HTTP-only cookie to identify the session
