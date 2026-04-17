@@ -131,23 +131,6 @@ export default function AdminLinkManager() {
     }
   };
 
-  const handleExport = async () => {
-    try {
-      const res = await fetch("/api/export");
-      if (!res.ok) throw new Error();
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `yourls-export-${new Date().toISOString().split("T")[0]}.csv`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-      toast("Export downloaded", "success");
-    } catch {
-      toast("Export failed", "error");
-    }
-  };
-
   return (
     <div className="space-y-5">
       {/* Toolbar */}
@@ -205,15 +188,12 @@ export default function AdminLinkManager() {
         />
       )}
 
-      {/* Pagination + Export */}
+      {/* Pagination */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <span className="text-xs" style={{ color: "var(--text-muted)" }}>
             {pagination.total} total transmission{pagination.total !== 1 ? "s" : ""}
           </span>
-          <button onClick={handleExport} className="btn-ghost text-xs gap-1.5">
-            <Download size={13} /> Export CSV
-          </button>
         </div>
         <Pagination
           page={pagination.page}

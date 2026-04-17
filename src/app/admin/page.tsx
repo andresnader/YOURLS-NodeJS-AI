@@ -10,64 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default function AdminPage() {
   return (
-    <main className="min-h-screen relative overflow-hidden">
-      {/* Ambient decorative orbs */}
-      <div
-        className="fixed top-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full pointer-events-none z-0"
-        style={{
-          background: "radial-gradient(circle, rgba(0, 240, 255, 0.06) 0%, transparent 70%)",
-          animation: "floatOrb 25s ease-in-out infinite",
-        }}
-      />
-      <div
-        className="fixed bottom-[-15%] right-[-5%] w-[600px] h-[600px] rounded-full pointer-events-none z-0"
-        style={{
-          background: "radial-gradient(circle, rgba(168, 85, 247, 0.04) 0%, transparent 70%)",
-          animation: "floatOrb 30s ease-in-out infinite reverse",
-        }}
-      />
-      <div
-        className="fixed top-[40%] right-[20%] w-[300px] h-[300px] rounded-full pointer-events-none z-0"
-        style={{
-          background: "radial-gradient(circle, rgba(0, 240, 255, 0.03) 0%, transparent 70%)",
-          animation: "floatOrb 20s ease-in-out infinite 5s",
-        }}
-      />
-
-      {/* Top Nav — sticky glass bar */}
-      <nav
-        className="sticky top-0 z-30 px-6 py-3"
-        style={{
-          background: "rgba(4, 6, 9, 0.6)",
-          backdropFilter: "blur(24px) saturate(1.5)",
-          WebkitBackdropFilter: "blur(24px) saturate(1.5)",
-          borderBottom: "1px solid var(--border-glass)",
-        }}
-      >
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center"
-              style={{
-                background: "linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(168, 85, 247, 0.1))",
-                border: "1px solid rgba(0, 240, 255, 0.2)",
-                boxShadow: "0 0 20px -5px rgba(0, 240, 255, 0.2)",
-              }}
-            >
-              <Sparkles size={16} style={{ color: "#00F0FF" }} />
-            </div>
-            <h1 className="text-lg font-extrabold tracking-widest" style={{ color: "var(--text-primary)" }}>
-              YOURLS<span style={{ color: "#00F0FF" }}>Node</span>
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <LogoutButton />
-          </div>
-        </div>
-      </nav>
-
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8 relative z-10">
+    <div className="px-6 py-8 md:px-10 space-y-8 animate-fade-in relative z-10">
         {/* Stats */}
         <StatsBar />
 
@@ -117,6 +60,5 @@ export default function AdminPage() {
           </div>
         </section>
       </div>
-    </main>
   );
 }
