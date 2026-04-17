@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Sparkles, Activity, ShieldCheck, Github } from "lucide-react";
+import { Sparkles, Activity, ShieldCheck, GitBranch } from "lucide-react";
 import BackgroundSlider from "@/components/BackgroundSlider";
 import PublicShortenForm from "@/components/PublicShortenForm";
 import prisma from "@/lib/prisma";
@@ -104,7 +104,7 @@ export default async function LandingPage() {
         </div>
         
         <div className="flex items-center gap-4 pointer-events-auto opacity-30 hover:opacity-100 transition-opacity">
-          <a href="#" className="p-2 hover:text-[#00F0FF]"><Github size={18} /></a>
+          <a href="#" className="p-2 hover:text-[#00F0FF]"><GitBranch size={18} /></a>
           <span className="w-px h-3 bg-white/20" />
           <span className="text-[10px] font-bold uppercase tracking-[0.2em]">YOURLS_NODE_V1.0</span>
         </div>
