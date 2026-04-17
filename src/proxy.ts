@@ -41,9 +41,11 @@ export function proxy(request: NextRequest) {
   }
 
   // 3. Auth Protection for sensitive API routes
-  // Allow POST to /api/shorten (Public usage)
+  // Allow POST to /api/shorten (Public usage) and /api/auth (Login)
   // Protect everything else (GET links list, DELETE, Export)
-  const isPublicApi = pathname === '/api/shorten' && request.method === 'POST';
+  const isPublicApi = 
+    (pathname === '/api/shorten' && request.method === 'POST') ||
+    (pathname === '/api/auth' && request.method === 'POST');
   
   if (pathname.startsWith('/api') && !isPublicApi) {
     if (!isAuthenticated) {
