@@ -13,7 +13,9 @@ const RESERVED_KEYWORDS = [
 
 export async function POST(request: Request) {
   try {
-    const session = await getSession();
+    // TEMP: Skip session check to test if the issue is auth-related
+    // const session = await getSession();
+    const session = null;
     const { url, customKeyword, title, redirectType } = await request.json();
 
     if (!url) {
@@ -34,6 +36,23 @@ export async function POST(request: Request) {
     const keyword = customKeyword && customKeyword.trim() !== ''
       ? customKeyword.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '')
       : nanoid(6);
+
+    if (!keyword) {
+      return NextResponse.json({ error: 'Invalid keyword' }, { status: 400 });
+    }
+
+    // Check reserved keywords
+    if (RESERVED_KEYWORDS.includes(keyword)) {
+      return NextResponse.json({ error: 'Keyword is reserved for system use' }, { status: 400 });
+    }
+
+    const existing = await prisma.url.findUnique({
+      where: { keyword }
+    });
+
+    if (existing) {
+      return NextResponse.json({ error: 'Keyword already in use' }, { status: 409 });
+    }
 
     // Fetch Metadata if not provided
     let finalTitle = title?.trim() || null;
