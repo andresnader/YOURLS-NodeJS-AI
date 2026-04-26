@@ -15,7 +15,7 @@ export default function ApiKeysPage() {
 
   const fetchKeys = async () => {
     try {
-      const res = await fetch("/api/keys");
+      const res = await fetch("/api/keys", { credentials: 'include' });
       const data = await res.json();
       if (data.success) setKeys(data.data);
     } catch (err) {
@@ -37,6 +37,7 @@ export default function ApiKeysPage() {
       const res = await fetch("/api/keys", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',
         body: JSON.stringify({ name: newKeyName })
       });
       const data = await res.json();
@@ -58,6 +59,7 @@ export default function ApiKeysPage() {
       const res = await fetch("/api/keys", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',
         body: JSON.stringify({ id })
       });
       const data = await res.json();

@@ -44,7 +44,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, data: newKey });
   } catch (error) {
     console.error('Error creating key:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: 'Internal Server Error', details: message }, { status: 500 });
   }
 }
 

@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
       // Try to set cookie (non-httpOnly so client can also set it)
       // This is a backup - localStorage is the primary session store
-      response.cookies.set('yourls_session', sessionData, {
+      response.cookies.set('yourls_session', JSON.stringify(sessionData), {
         httpOnly: false, // Allow client-side access
         secure: false,
         sameSite: 'lax',

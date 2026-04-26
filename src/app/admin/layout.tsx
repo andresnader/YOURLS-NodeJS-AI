@@ -41,7 +41,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsAuthChecked(true);
 
     // Also fetch settings (this also validates server-side session)
-    fetch("/api/settings")
+    fetch("/api/settings", { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (data.app_name) setAppName(data.app_name);
