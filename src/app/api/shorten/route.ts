@@ -14,11 +14,92 @@ const RESERVED_KEYWORDS = [
 export async function POST(request: Request) {
   try {
     const session = await getSession();
-    const { url, customKeyword, title, redirectType } = await request.json();
+    console.log('[shorten] Session:', session);
+
+    let body;
+    try {
+      body = await request.json();
+      console.log('[shorten] Request body:', JSON.stringify(body).substring(0, 100));
+    } catch (e) {
+      console.error('[shorten] JSON parse error:', e);
+      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+    }
+
+    const { url, customKeyword, title, redirectType } = body;
 
     if (!url) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
     }
+
+    try {
+      new URL(url);
+    } catch {
+      return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
+    }
+
+    // Check domain blacklist
+    if (isBlacklisted(url)) {
+      return NextResponse.json({ error: 'This domain is blacklisted due to security reasons' }, { status: 403 });
+    }
+
+    const keyword = customKeyword && customKeyword.trim() !== ''
+      ? customKeyword.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '')
+      : nanoid(6);
+
+    console.log('[shorten] Generated keyword:', keyword);
+
+    if (!keyword) {
+      return NextResponse.json({ error: 'Invalid keyword' }, { status: 400 });
+    }
+
+    // Check reserved keywords
+    if (RESERVED_KEYWORDS.includes(keyword)) {
+      return NextResponse.json({ error: 'Keyword is reserved for system use' }, { status: 400 });
+    }
+
+    console.log('[shorten] Checking existing URL for keyword:', keyword);
+    const existing = await prisma.url.findUnique({
+      where: { keyword }
+    });
+    console.log('[shorten] Existing URL:', existing);
+
+    if (existing) {
+      return NextResponse.json({ error: 'Keyword already in use' }, { status: 409 });
+    }
+
+    // Fetch Metadata if not provided
+    let finalTitle = title?.trim() || null;
+    let finalFavicon: string | null = null;
+
+    try {
+      const metadata = await fetchMetadata(url);
+      finalTitle = finalTitle || metadata.title;
+      finalFavicon = metadata.favicon;
+    } catch (metaError) {
+      console.error('Metadata fetch failed:', metaError);
+    }
+
+    console.log('[shorten] Creating URL with keyword:', keyword, 'url:', url);
+    const newUrl = await prisma.url.create({
+      data: {
+        keyword,
+        url,
+        title: finalTitle,
+        favicon: finalFavicon,
+        redirectType: redirectType === 301 ? 301 : 302,
+        userId: session?.id || null,
+        ip: request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
+      }
+    });
+    console.log('[shorten] Created URL:', newUrl);
+
+    return NextResponse.json({ success: true, data: newUrl});
+  } catch (error) {
+    console.error('Error shortening URL:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'Unknown');
+    return NextResponse.json({ error: 'Internal Server Error', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+  }
+}
 
     try {
       new URL(url);
