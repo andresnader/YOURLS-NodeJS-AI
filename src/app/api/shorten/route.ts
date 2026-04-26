@@ -31,47 +31,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'This domain is blacklisted due to security reasons' }, { status: 403 });
     }
 
-    // TEMP DEBUG: Skip metadata to isolate the error
-    console.log('[DEBUG shorten] URL received:', url);
-    const debugSkipMetadata = true;
-
-    if (debugSkipMetadata) {
-      console.log('[DEBUG shorten] Skipping metadata fetch for debug');
-    }
-
     const keyword = customKeyword && customKeyword.trim() !== ''
       ? customKeyword.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '')
       : nanoid(6);
-
-    if (!keyword) {
-      return NextResponse.json({ error: 'Invalid keyword' }, { status: 400 });
-    }
-
-    // Check reserved keywords
-    if (RESERVED_KEYWORDS.includes(keyword)) {
-      return NextResponse.json({ error: 'Keyword is reserved for system use' }, { status: 400 });
-    }
-
-    const existing = await prisma.url.findUnique({
-      where: { keyword }
-    });
-
-    if (existing) {
-      return NextResponse.json({ error: 'Keyword already in use' }, { status: 409 });
-    }
 
     // Fetch Metadata if not provided
     let finalTitle = title?.trim() || null;
     let finalFavicon: string | null = null;
 
-    if (!debugSkipMetadata) {
-      try {
-        const metadata = await fetchMetadata(url);
-        finalTitle = finalTitle || metadata.title;
-        finalFavicon = metadata.favicon;
-      } catch (metaError) {
-        console.error('[DEBUG shorten] Metadata fetch failed:', metaError);
-      }
+    try {
+      const metadata = await fetchMetadata(url);
+      finalTitle = finalTitle || metadata.title;
+      finalFavicon = metadata.favicon;
+    } catch (metaError) {
+      console.error('Metadata fetch failed:', metaError);
     }
 
     const newUrl = await prisma.url.create({
@@ -84,18 +57,12 @@ export async function POST(request: Request) {
         userId: session?.id || null,
         ip: request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
       }
-    }).catch((err: any) => {
-      console.error('[DEBUG shorten] Prisma create error:', err);
-      throw err;
     });
 
-    console.log('[DEBUG shorten] Created URL successfully:', newUrl);
-
     return NextResponse.json({ success: true, data: newUrl });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error shortening URL:', error);
-    const errorMessage = error?.message || error?.code || 'Unknown error';
-    return NextResponse.json({ error: 'Internal Server Error', details: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
