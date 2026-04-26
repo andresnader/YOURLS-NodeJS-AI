@@ -13,10 +13,12 @@ const RESERVED_KEYWORDS = [
 
 export async function POST(request: Request) {
   try {
-    // TEMP: Skip session check to test if the issue is auth-related
-    // const session = await getSession();
-    const session = null;
+    console.log('[shorten] Request received');
+    console.log('[shorten] Content-Type:', request.headers.get('content-type'));
+    console.log('[shorten] x-api-key present:', !!request.headers.get('x-api-key'));
+
     const { url, customKeyword, title, redirectType } = await request.json();
+    console.log('[shorten] Parsed body, url:', url);
 
     if (!url) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
@@ -36,6 +38,8 @@ export async function POST(request: Request) {
     const keyword = customKeyword && customKeyword.trim() !== ''
       ? customKeyword.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '')
       : nanoid(6);
+
+    console.log('[shorten] Generated keyword:', keyword);
 
     if (!keyword) {
       return NextResponse.json({ error: 'Invalid keyword' }, { status: 400 });
@@ -73,7 +77,7 @@ export async function POST(request: Request) {
         title: finalTitle,
         favicon: finalFavicon,
         redirectType: redirectType === 301 ? 301 : 302,
-        userId: session?.id || null,
+        userId: null,
         ip: request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
       }
     });
