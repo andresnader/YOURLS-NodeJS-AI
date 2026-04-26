@@ -8,6 +8,12 @@ export function LogoutButton() {
 
   const handleLogout = async () => {
     try {
+      // Clear localStorage first
+      localStorage.removeItem('yourls_session');
+
+      // Also clear the cookie
+      document.cookie = 'yourls_session=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+
       await fetch("/api/auth", { method: "DELETE" });
       router.push("/login");
       router.refresh();

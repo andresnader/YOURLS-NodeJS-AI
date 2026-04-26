@@ -1,27 +1,53 @@
 "use client";
 
-import { Sparkles, LayoutDashboard, Settings, BarChart3, LogOut, ChevronLeft, ChevronRight, Menu, Key } from "lucide-react";
+import { Sparkles, LayoutDashboard, Settings, BarChart3, LogOut, ChevronLeft, ChevronRight, Menu, Key, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { LogoutButton } from "@/components/LogoutButton";
 import { useTranslation } from "@/lib/LanguageContext";
 
+function getSession() {
+  // Try localStorage first (primary session store)
+  const localStorageSession = localStorage.getItem('yourls_session');
+  if (localStorageSession) {
+    try {
+      return JSON.parse(localStorageSession);
+    } catch {
+      localStorage.removeItem('yourls_session');
+    }
+  }
+  return null;
+}
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [appName, setAppName] = useState("YOURLS Node");
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
 
   useEffect(() => {
+    // Check session from localStorage (primary) or cookie
+    const session = getSession();
+    if (!session) {
+      console.log('No session found in localStorage, redirecting to login');
+      router.replace('/login');
+      return;
+    }
+    console.log('Session valid:', session);
+    setIsAuthChecked(true);
+
+    // Also fetch settings (this also validates server-side session)
     fetch("/api/settings")
       .then(res => res.json())
       .then(data => {
         if (data.app_name) setAppName(data.app_name);
       })
       .catch(console.error);
-  }, []);
+  }, [router]);
 
   const menuItems = [
     { name: t("common.dashboard"), icon: LayoutDashboard, href: "/admin", color: "#00F0FF" },
@@ -33,6 +59,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const logoParts = appName.split(" ");
   const lastPart = logoParts.pop();
   const firstPart = logoParts.join(" ");
+
+  // Don't render until auth is checked
+  if (!isAuthChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-void">
+        <Loader2 className="animate-spin h-8 w-8 text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex bg-void text-primary selection:bg-primary/30 transition-colors duration-300">

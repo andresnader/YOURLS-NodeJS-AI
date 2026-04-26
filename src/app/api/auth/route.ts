@@ -36,13 +36,17 @@ export async function POST(request: Request) {
         role: user.role
       });
 
+      // Try to set cookie (non-httpOnly so client can also set it)
+      // This is a backup - localStorage is the primary session store
       response.cookies.set('yourls_session', sessionData, {
-        httpOnly: true,
-        secure: false, // Temporary for debugging
+        httpOnly: false, // Allow client-side access
+        secure: false,
         sameSite: 'lax',
         path: '/',
-        maxAge: 60 * 60 * 24 * 7 // 1 week
+        maxAge: 60 * 60 * 24 * 7
       });
+
+      console.log('Auth success - session cookie set, session data:', sessionData);
       return response;
     }
 

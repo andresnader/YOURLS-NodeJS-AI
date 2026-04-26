@@ -24,9 +24,23 @@ export default function LoginPage() {
 
       if (res.ok) {
         setError("");
-        // Show success for a moment
         const data = await res.json();
         console.log("Login Success:", data);
+
+        const sessionData = {
+          id: data.user?.id || 'admin',
+          username: data.user?.username || 'admin',
+          role: data.user?.role || 'ADMIN'
+        };
+
+        // Store session in localStorage (backup)
+        localStorage.setItem('yourls_session', JSON.stringify(sessionData));
+
+        // ALSO set cookie manually on client side ( Railway sometimes strips Set-Cookie from server)
+        const cookieExpiry = new Date();
+        cookieExpiry.setDate(cookieExpiry.getDate() + 7);
+        document.cookie = `yourls_session=${JSON.stringify(sessionData)};path=/;expires=${cookieExpiry.toUTCString()};SameSite=Lax`;
+
         alert("Login Successful! Redirecting...");
         window.location.href = "/admin";
       } else {
