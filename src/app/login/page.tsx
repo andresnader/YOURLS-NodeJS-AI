@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, ArrowRight, Sparkles } from "lucide-react";
+import { Lock, User, ArrowRight, Sparkles } from "lucide-react";
 
 export default function LoginPage() {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -19,7 +20,7 @@ export default function LoginPage() {
       const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ username, password }),
       });
 
       if (res.ok) {
@@ -28,9 +29,9 @@ export default function LoginPage() {
         console.log("Login Success:", data);
 
         const sessionData = {
-          id: data.user?.id || 'admin',
-          username: data.user?.username || 'admin',
-          role: data.user?.role || 'ADMIN'
+          id: data.user?.id || username,
+          username: data.user?.username || username,
+          role: data.user?.role || 'USER'
         };
 
         // Store session in localStorage (backup)
@@ -98,12 +99,37 @@ export default function LoginPage() {
           onSubmit={handleLogin}
           className="glass rounded-2xl p-8"
         >
+          <div className="mb-5">
+            <label
+              className="block text-[11px] font-semibold uppercase tracking-[0.15em] mb-2.5"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Username
+            </label>
+            <div className="relative">
+              <User
+                size={16}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                style={{ color: "var(--text-muted)" }}
+              />
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                placeholder="Enter username"
+                className="input-glass pl-10"
+                autoFocus
+              />
+            </div>
+          </div>
+
           <div className="mb-6">
             <label
               className="block text-[11px] font-semibold uppercase tracking-[0.15em] mb-2.5"
               style={{ color: "var(--text-muted)" }}
             >
-              Access Key
+              Password
             </label>
             <div className="relative">
               <Lock
@@ -116,9 +142,8 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                placeholder="Enter admin password"
+                placeholder="Enter password"
                 className="input-glass pl-10"
-                autoFocus
               />
             </div>
           </div>
