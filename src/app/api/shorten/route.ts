@@ -13,12 +13,8 @@ const RESERVED_KEYWORDS = [
 
 export async function POST(request: Request) {
   try {
-    console.log('[shorten] Request received');
-    console.log('[shorten] Content-Type:', request.headers.get('content-type'));
-    console.log('[shorten] x-api-key present:', !!request.headers.get('x-api-key'));
-
+    const session = await getSession();
     const { url, customKeyword, title, redirectType } = await request.json();
-    console.log('[shorten] Parsed body, url:', url);
 
     if (!url) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
@@ -77,7 +73,7 @@ export async function POST(request: Request) {
         title: finalTitle,
         favicon: finalFavicon,
         redirectType: redirectType === 301 ? 301 : 302,
-        userId: null,
+        userId: session?.id || null,
         ip: request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
       }
     });
