@@ -6,7 +6,7 @@ export async function fetchMetadata(url: string) {
       headers: {
         'User-Agent': 'YOURLS-Node-Bot/1.0',
       },
-      next: { revalidate: 3600 } 
+      signal: AbortSignal.timeout(5000)
     });
 
     if (!response.ok) return { title: null, favicon: null };
