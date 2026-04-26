@@ -71,6 +71,7 @@ export async function proxy(request: NextRequest) {
   const apiKeyAllowedRoutes = [
     '/api/shorten',
     '/api/stats',
+    '/api/test',
   ];
   const isApiKeyRoute = apiKeyAllowedRoutes.some(route => pathname.startsWith(route));
 
