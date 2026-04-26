@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { rateLimit } from './lib/rate-limit';
+import prisma from './lib/prisma';
 
 const limiter = rateLimit({
   id: 'api-public-shorten',
@@ -18,10 +19,22 @@ function isValidSession(sessionValue: string | undefined): boolean {
   }
 }
 
-export function proxy(request: NextRequest) {
+async function isValidApiKey(apiKey: string | null): Promise<boolean> {
+  if (!apiKey) return false;
+  const keyData = await prisma.apiKey.findUnique({
+    where: { key: apiKey, isActive: true }
+  });
+  return !!keyData;
+}
+
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('yourls_session');
   const isAuthenticated = isValidSession(sessionCookie?.value);
+
+  // Check for API Key in headers
+  const apiKey = request.headers.get('x-api-key');
+  const hasValidApiKey = await isValidApiKey(apiKey);
 
   // 1. Rate Limiting for Public Shorten API
   if (pathname === '/api/shorten' && request.method === 'POST') {
@@ -49,13 +62,20 @@ export function proxy(request: NextRequest) {
 
   // 3. Auth Protection for sensitive API routes
   // Allow POST to /api/shorten (Public usage) and /api/auth (Login/Logout)
-  // Protect everything else
+  // Also allow API Key authentication for programmatic access
   const isPublicApi =
     (pathname === '/api/shorten' && request.method === 'POST') ||
     (pathname === '/api/auth' && (request.method === 'POST' || request.method === 'DELETE'));
 
+  // Routes that allow API Key authentication (for WordPress integration, etc.)
+  const apiKeyAllowedRoutes = [
+    '/api/shorten',
+    '/api/stats',
+  ];
+  const isApiKeyRoute = apiKeyAllowedRoutes.some(route => pathname.startsWith(route));
+
   if (pathname.startsWith('/api') && !isPublicApi) {
-    if (!isAuthenticated) {
+    if (!isAuthenticated && !(hasValidApiKey && isApiKeyRoute)) {
       return NextResponse.json({ error: 'Authentication required for network protocol access.' }, { status: 401 });
     }
   }
