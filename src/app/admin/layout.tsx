@@ -53,6 +53,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: t("common.dashboard"), icon: LayoutDashboard, href: "/admin", color: "#00F0FF" },
     { name: t("common.stats"), icon: BarChart3, href: "/admin/stats", color: "#A855F7" },
     { name: t("common.api_keys"), icon: Key, href: "/admin/keys", color: "#EC4899" },
+    { name: t("common.documentation"), icon: BookOpen, href: "/admin/docs", color: "#10B981" },
     { name: t("common.settings"), icon: Settings, href: "/admin/settings", color: "#FBBF24" },
   ];
 

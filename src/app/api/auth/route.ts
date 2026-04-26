@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       // Set an HTTP-only cookie to identify the session
       const response = NextResponse.json({ 
         success: true, 
-        user: { username: user.username, role: user.role } 
+        user: { id: user.id, username: user.username, role: user.role } 
       });
       
       const sessionData = JSON.stringify({
