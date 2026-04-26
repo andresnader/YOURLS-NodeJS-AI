@@ -81,10 +81,15 @@ export async function POST(request: Request) {
         title: finalTitle,
         favicon: finalFavicon,
         redirectType: redirectType === 301 ? 301 : 302,
-        userId: session?.id || null, // Associate with user if logged in
+        userId: session?.id || null,
         ip: request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
       }
+    }).catch((err: any) => {
+      console.error('[DEBUG shorten] Prisma create error:', err);
+      throw err;
     });
+
+    console.log('[DEBUG shorten] Created URL successfully:', newUrl);
 
     return NextResponse.json({ success: true, data: newUrl });
   } catch (error: any) {
