@@ -15,29 +15,27 @@ model Url {
   createdAt    DateTime @default(now())
   ip           String?
   clicks       Int      @default(0)
-  redirectType Int      @default(301) // 301 (Permanent) or 302 (Temporary)
-  password     String?  // Optional password for the link
-  favicon      String?  // [NEW] Stored favicon URL
-  isHealthy    Boolean  @default(true) // [NEW] Link health status
-  
-  userId       String?  // [NEW] Owner of the link
-  user         User?    @relation(fields: [userId], references: [id])
-  
+  password     String?
+  redirectType Int      @default(301)
+  favicon      String?
+  isHealthy    Boolean  @default(true)
+  userId       String?
   logs         Log[]
+  user         User?    @relation(fields: [userId], references: [id])
 }
 
 model Log {
   id          Int      @id @default(autoincrement())
   clickedAt   DateTime @default(now())
   shorturl    String
-  urlRel      Url      @relation(fields: [shorturl], references: [keyword], onDelete: Cascade)
   referrer    String?
   userAgent   String?
   ipAddress   String?
   countryCode String?
   browser     String?
-  os          String?
   device      String?
+  os          String?
+  urlRel      Url      @relation(fields: [shorturl], references: [keyword], onDelete: Cascade)
 }
 
 model Option {
@@ -49,21 +47,19 @@ model User {
   id           String   @id @default(cuid())
   username     String   @unique
   passwordHash String
-  role         String   @default("USER") // ADMIN or USER
+  role         String   @default("USER")
   createdAt    DateTime @default(now())
-  urls         Url[]
   apiKeys      ApiKey[]
+  urls         Url[]
 }
 
 model ApiKey {
-  id        String   @id @default(cuid())
-  key       String   @unique
-  name      String   
-  createdAt DateTime @default(now())
+  id        String    @id @default(cuid())
+  key       String    @unique
+  name      String
+  createdAt DateTime  @default(now())
   lastUsed  DateTime?
-  isActive  Boolean  @default(true)
-  
+  isActive  Boolean   @default(true)
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
 }
-

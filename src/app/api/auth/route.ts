@@ -6,13 +6,24 @@ const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
   try {
-    const { username = 'admin', password } = await request.json();
+    const body = await request.json();
+    const { username = 'admin', password } = body;
+    
+    console.log(`Login attempt for user: ${username}`);
 
     const user = await prisma.user.findUnique({
       where: { username }
     });
 
-    if (user && await bcrypt.compare(password, user.passwordHash)) {
+    if (!user) {
+      console.log(`User not found: ${username}`);
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    console.log(`Password match for ${username}: ${isMatch}`);
+
+    if (isMatch) {
       // Set an HTTP-only cookie to identify the session
       const response = NextResponse.json({ 
         success: true, 
