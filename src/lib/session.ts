@@ -11,7 +11,7 @@ export async function getSession() {
       console.log('[getSession] Checking API key:', apiKey.substring(0, 10) + '...');
 
       // 1. Check if the key exists in the database
-      const keyData = await prisma.apiKey.findUnique({
+      const keyData = await prisma.apiKey.findFirst({
         where: { key: apiKey, isActive: true },
         include: { user: true }
       });

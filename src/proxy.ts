@@ -21,10 +21,15 @@ function isValidSession(sessionValue: string | undefined): boolean {
 
 async function isValidApiKey(apiKey: string | null): Promise<boolean> {
   if (!apiKey) return false;
-  const keyData = await prisma.apiKey.findUnique({
-    where: { key: apiKey, isActive: true }
-  });
-  return !!keyData;
+  try {
+    const keyData = await prisma.apiKey.findFirst({
+      where: { key: apiKey, isActive: true }
+    });
+    return !!keyData;
+  } catch (e) {
+    console.error('[proxy] isValidApiKey error:', e);
+    return false;
+  }
 }
 
 export async function proxy(request: NextRequest) {
