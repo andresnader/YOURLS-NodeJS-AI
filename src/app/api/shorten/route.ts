@@ -31,6 +31,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'This domain is blacklisted due to security reasons' }, { status: 403 });
     }
 
+    // TEMP DEBUG: Skip metadata to isolate the error
+    console.log('[DEBUG shorten] URL received:', url);
+    const debugSkipMetadata = true;
+
+    if (debugSkipMetadata) {
+      console.log('[DEBUG shorten] Skipping metadata fetch for debug');
+    }
+
     const keyword = customKeyword && customKeyword.trim() !== ''
       ? customKeyword.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '')
       : nanoid(6);
@@ -53,9 +61,18 @@ export async function POST(request: Request) {
     }
 
     // Fetch Metadata if not provided
-    const metadata = await fetchMetadata(url);
-    const finalTitle = title?.trim() || metadata.title || null;
-    const finalFavicon = metadata.favicon || null;
+    let finalTitle = title?.trim() || null;
+    let finalFavicon: string | null = null;
+
+    if (!debugSkipMetadata) {
+      try {
+        const metadata = await fetchMetadata(url);
+        finalTitle = finalTitle || metadata.title;
+        finalFavicon = metadata.favicon;
+      } catch (metaError) {
+        console.error('[DEBUG shorten] Metadata fetch failed:', metaError);
+      }
+    }
 
     const newUrl = await prisma.url.create({
       data: {
