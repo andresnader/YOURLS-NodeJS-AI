@@ -70,9 +70,10 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ success: true, data: newUrl });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error shortening URL:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    const errorMessage = error?.message || error?.code || 'Unknown error';
+    return NextResponse.json({ error: 'Internal Server Error', details: errorMessage }, { status: 500 });
   }
 }
 
