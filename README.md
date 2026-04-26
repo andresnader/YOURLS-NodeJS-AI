@@ -1,4 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Proyecto YOURLS Node.js
+
+**URL shortener con capacidades AI construido con Next.js, Prisma y PostgreSQL.**
+
+---
+
+## 🤖 Para Agentes IA: Consultar Contexto en Mind
+
+> **IMPORTANTE**: Antes de modificar código, consulta el espacio de Mind para entender el contexto del proyecto.
+
+Este proyecto usa **Mind** para persistir contexto, decisiones y conocimiento acumulado.
+
+```
+Espacio: projects/YOURLS-NodeJS-AI
+```
+
+### Memorias clave disponibles:
+
+| Memoria | Descripción |
+|---------|-------------|
+| `project-overview` | Arquitectura general, tech stack, features |
+| `database-schema` | Modelos Prisma (Url, Log, User, Option) |
+| `api-review-analysis` | Análisis de API, vulnerabilidades, mejoras |
+| `redirection-engine` | Flujo de redirección y tracking |
+| `mvp-specification` | Requisitos y decisiones originales |
+
+### Documentación adicional:
+- `docs/api-review.md` - Análisis completo del API con recomendaciones
+
+### Tech Stack
+- **Frontend**: Next.js 15+, React 19, Tailwind CSS 4
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: PostgreSQL
+- **Auth**: Custom con bcryptjs
+
+### Características
+- Acortamiento de URLs con keywords personalizados
+- Análisis de clicks y estadísticas en tiempo real
+- Monitoreo de salud de enlaces
+- Generación de códigos QR
+- Soporte multi-usuario con roles (ADMIN/USER)
+- Extracción de metadatos y favicons
+
+---
 
 ## Getting Started
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles, LayoutDashboard, Settings, BarChart3, LogOut, ChevronLeft, ChevronRight, Menu } from "lucide-react";
+import { Sparkles, LayoutDashboard, Settings, BarChart3, LogOut, ChevronLeft, ChevronRight, Menu, Key } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -26,6 +26,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const menuItems = [
     { name: t("common.dashboard"), icon: LayoutDashboard, href: "/admin", color: "#00F0FF" },
     { name: t("common.stats"), icon: BarChart3, href: "/admin/stats", color: "#A855F7" },
+    { name: t("common.api_keys"), icon: Key, href: "/admin/keys", color: "#EC4899" },
     { name: t("common.settings"), icon: Settings, href: "/admin/settings", color: "#FBBF24" },
   ];
 

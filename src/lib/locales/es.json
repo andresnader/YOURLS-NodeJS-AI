@@ -3,6 +3,7 @@
     "dashboard": "Panel de Control",
     "stats": "Estadísticas Globales",
     "settings": "Configuración",
+    "api_keys": "Claves API",
     "logout": "Cerrar Sesión",
     "loading": "Cargando...",
     "save": "Guardar",

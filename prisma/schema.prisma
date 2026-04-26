@@ -52,5 +52,18 @@ model User {
   role         String   @default("USER") // ADMIN or USER
   createdAt    DateTime @default(now())
   urls         Url[]
+  apiKeys      ApiKey[]
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  name      String   
+  createdAt DateTime @default(now())
+  lastUsed  DateTime?
+  isActive  Boolean  @default(true)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
 }
 

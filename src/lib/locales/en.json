@@ -3,6 +3,7 @@
     "dashboard": "Dashboard",
     "stats": "Global Stats",
     "settings": "Configuration",
+    "api_keys": "API Keys",
     "logout": "Logout",
     "loading": "Loading...",
     "save": "Save",
