@@ -23,6 +23,11 @@ export default function LoginPage() {
       });
 
       if (res.ok) {
+        setError("");
+        // Show success for a moment
+        const data = await res.json();
+        console.log("Login Success:", data);
+        alert("Login Successful! Redirecting...");
         window.location.href = "/admin";
       } else {
         const data = await res.json();
