@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles, LayoutDashboard, Settings, BarChart3, LogOut, ChevronLeft, ChevronRight, Menu, Key, Loader2 } from "lucide-react";
+import { Sparkles, LayoutDashboard, Settings, BarChart3, LogOut, ChevronLeft, ChevronRight, Menu, Key, Loader2, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
