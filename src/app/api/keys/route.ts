@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/session';
-import { crypto } from 'crypto';
+import crypto from 'crypto';
 
 export async function GET() {
   try {
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 });
 
     // Generate a secure random key
-    const rawKey = require('crypto').randomBytes(32).toString('hex');
+    const rawKey = crypto.randomBytes(32).toString('hex');
     const apiKeyPrefix = 'yn_'; // YOURLS Node prefix
     const fullKey = apiKeyPrefix + rawKey;
 
