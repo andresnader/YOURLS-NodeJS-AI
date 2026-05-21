@@ -1,47 +1,22 @@
-import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/session';
+/** DEPRECATED alias. Use /api/v1/settings. */
+import { settingsGet, settingsPost } from '@/lib/handlers/settings-handler';
+
+const DEPRECATION_HEADERS = {
+  Deprecation: 'true',
+  Sunset: 'Wed, 31 Dec 2026 23:59:59 GMT',
+  Link: '</api/v1/settings>; rel="successor-version"',
+};
+
+function addDeprecation(res: Response): Response {
+  const headers = new Headers(res.headers);
+  for (const [k, v] of Object.entries(DEPRECATION_HEADERS)) headers.set(k, v);
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
 
 export async function GET() {
-  try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const options = await prisma.option.findMany();
-    const settings = options.reduce((acc: any, curr) => {
-      acc[curr.name] = curr.value;
-      return acc;
-    }, {});
-
-    return NextResponse.json(settings);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 });
-  }
+  return addDeprecation(await settingsGet());
 }
 
 export async function POST(request: Request) {
-  try {
-    const session = await getSession();
-    if (!session || session.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const updates = await request.json();
-    
-    const promises = Object.entries(updates).map(([name, value]) => {
-      return prisma.option.upsert({
-        where: { name },
-        update: { value: String(value) },
-        create: { name, value: String(value) }
-      });
-    });
-
-    await Promise.all(promises);
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 });
-  }
+  return addDeprecation(await settingsPost(request));
 }

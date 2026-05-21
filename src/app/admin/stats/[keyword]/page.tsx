@@ -1,26 +1,9 @@
 import { Suspense } from 'react';
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, ExternalLink, Globe, Calendar, MousePointer2 } from 'lucide-react';
 import StatsCharts from '@/components/StatsCharts';
-
-interface StatsData {
-  keyword: string;
-  longUrl: string;
-  totalClicks: number;
-  timeSeries: Record<string, number>;
-  browsers: Record<string, number>;
-  os: Record<string, number>;
-  devices: Record<string, number>;
-  countries: Record<string, number>;
-}
-
-async function getStats(keyword: string): Promise<StatsData> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/stats/${keyword}`, {
-    cache: 'no-store'
-  });
-  if (!res.ok) throw new Error('Failed to fetch stats');
-  return res.json();
-}
+import { getKeywordStats } from '@/lib/stats';
 
 export default async function KeywordStatsPage({ params }: { params: Promise<{ keyword: string }> }) {
   const { keyword } = await params;
@@ -69,8 +52,9 @@ export default async function KeywordStatsPage({ params }: { params: Promise<{ k
 
 async function StatsContent({ keyword }: { keyword: string }) {
   try {
-    const data = await getStats(keyword);
-    
+    const data = await getKeywordStats(keyword);
+    if (!data) notFound();
+
     return (
       <div className="space-y-8">
         {/* Summary Cards */}
@@ -104,9 +88,10 @@ async function StatsContent({ keyword }: { keyword: string }) {
       </div>
     );
   } catch (error) {
+    console.error('[stats page]', error);
     return (
       <div className="glass p-12 text-center text-red-400">
-        Trace protocol failed. Entry not found or database disconnect.
+        Could not load stats for this keyword. Try again in a moment.
       </div>
     );
   }

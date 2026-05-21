@@ -23,7 +23,8 @@
     "react-chartjs-2": "^5.3.1",
     "react-dom": "19.2.4",
     "react-qr-code": "^2.0.18",
-    "ua-parser-js": "^2.0.9"
+    "ua-parser-js": "^2.0.9",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

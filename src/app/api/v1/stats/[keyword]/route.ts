@@ -1,20 +1,18 @@
 import { NextResponse } from 'next/server';
 import { getKeywordStats } from '@/lib/stats';
+import { notFound, serverError } from '@/lib/api-error';
 
 export async function GET(
   _request: Request,
   context: { params: Promise<{ keyword: string }> },
 ) {
-  const { keyword } = await context.params;
-
   try {
+    const { keyword } = await context.params;
     const stats = await getKeywordStats(keyword);
-    if (!stats) {
-      return NextResponse.json({ error: 'URL not found' }, { status: 404 });
-    }
+    if (!stats) return notFound('Keyword not found');
     return NextResponse.json(stats);
   } catch (error) {
-    console.error('Error fetching detailed stats:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error('[stats]', error);
+    return serverError();
   }
 }

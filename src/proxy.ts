@@ -19,9 +19,22 @@ const apiLimiter = rateLimit({
 const PUBLIC_API_ROUTES: Array<{ path: string; methods: string[] }> = [
   { path: '/api/auth', methods: ['POST', 'DELETE'] },
   { path: '/api/shorten', methods: ['POST'] },
+  { path: '/api/v1/shorten', methods: ['POST'] },
+  { path: '/api/openapi.json', methods: ['GET'] },
+  { path: '/api/v1/openapi.json', methods: ['GET'] },
+  { path: '/api/docs', methods: ['GET'] },
 ];
 
-const API_KEY_ALLOWED_ROUTES = ['/api/shorten', '/api/stats', '/api/test', '/api/links'];
+const API_KEY_ALLOWED_ROUTES = [
+  '/api/shorten',
+  '/api/stats',
+  '/api/test',
+  '/api/links',
+  '/api/v1/shorten',
+  '/api/v1/stats',
+  '/api/v1/test',
+  '/api/v1/links',
+];
 
 function getIp(request: NextRequest): string {
   return (
