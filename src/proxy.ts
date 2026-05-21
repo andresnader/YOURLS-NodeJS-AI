@@ -4,6 +4,20 @@ import { rateLimit } from './lib/rate-limit';
 import { lookupApiKey } from './lib/api-key';
 import { SESSION_COOKIE, verifySession, type SessionPayload } from './lib/session';
 
+function problemJson(status: number, code: string, detail: string, extraHeaders: Record<string, string> = {}) {
+  const body = {
+    type: `/errors/${code}`,
+    title: code.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+    status,
+    code,
+    detail,
+  };
+  return NextResponse.json(body, {
+    status,
+    headers: { 'Content-Type': 'application/problem+json', ...extraHeaders },
+  });
+}
+
 const shortenLimiter = rateLimit({
   id: 'api-public-shorten',
   limit: 10,
@@ -60,17 +74,11 @@ export async function proxy(request: NextRequest) {
   if (pathname === '/api/shorten' && method === 'POST') {
     const { success, remaining, reset } = shortenLimiter.check(getIp(request));
     if (!success) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded', code: 'rate_limited' },
-        {
-          status: 429,
-          headers: {
-            'X-RateLimit-Limit': '10',
-            'X-RateLimit-Remaining': remaining.toString(),
-            'X-RateLimit-Reset': reset.toString(),
-          },
-        },
-      );
+      return problemJson(429, 'rate_limited', 'Rate limit exceeded', {
+        'X-RateLimit-Limit': '10',
+        'X-RateLimit-Remaining': remaining.toString(),
+        'X-RateLimit-Reset': reset.toString(),
+      });
     }
   }
 
@@ -97,33 +105,19 @@ export async function proxy(request: NextRequest) {
   // /api/* → require auth (cookie or API key), except whitelisted public endpoints
   if (pathname.startsWith('/api') && !isPublicApi(pathname, method)) {
     if (!isAuthenticated) {
-      return NextResponse.json(
-        { error: 'Authentication required', code: 'unauthenticated' },
-        { status: 401 },
-      );
+      return problemJson(401, 'unauthenticated', 'Authentication required');
     }
-    // API keys only allowed on whitelisted routes
     if (apiKeyData && !cookieSession && !isApiKeyRoute(pathname)) {
-      return NextResponse.json(
-        { error: 'API key not permitted for this route', code: 'forbidden' },
-        { status: 403 },
-      );
+      return problemJson(403, 'forbidden', 'API key not permitted for this route');
     }
-    // Global rate limit for authenticated API access
     const limitKey = cookieSession?.id || apiKeyData?.userId || getIp(request);
     const { success, remaining, reset } = apiLimiter.check(`api:${limitKey}`);
     if (!success) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded', code: 'rate_limited' },
-        {
-          status: 429,
-          headers: {
-            'X-RateLimit-Limit': '120',
-            'X-RateLimit-Remaining': remaining.toString(),
-            'X-RateLimit-Reset': reset.toString(),
-          },
-        },
-      );
+      return problemJson(429, 'rate_limited', 'Rate limit exceeded', {
+        'X-RateLimit-Limit': '120',
+        'X-RateLimit-Remaining': remaining.toString(),
+        'X-RateLimit-Reset': reset.toString(),
+      });
     }
   }
 
