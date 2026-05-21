@@ -55,11 +55,16 @@ model User {
 
 model ApiKey {
   id        String    @id @default(cuid())
-  key       String    @unique
+  key       String?   @unique
+  keyHash   String?   @unique
+  keyPrefix String?
   name      String
   createdAt DateTime  @default(now())
+  expiresAt DateTime?
   lastUsed  DateTime?
   isActive  Boolean   @default(true)
   userId    String
   user      User      @relation(fields: [userId], references: [id])
+
+  @@index([keyHash, isActive])
 }

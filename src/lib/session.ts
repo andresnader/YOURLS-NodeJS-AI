@@ -1,60 +1,92 @@
 import { cookies, headers } from 'next/headers';
-import prisma from '@/lib/prisma';
+import crypto from 'crypto';
+import { lookupApiKey } from '@/lib/api-key';
 
-export async function getSession() {
+export const SESSION_COOKIE = 'yourls_session';
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
+
+export type SessionPayload = {
+  id: string;
+  username: string;
+  role: 'ADMIN' | 'USER';
+  exp: number;
+  isApiKey?: boolean;
+};
+
+function getSecret(): string {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('SESSION_SECRET is required in production');
+    }
+    return 'dev-only-insecure-secret-change-me';
+  }
+  return secret;
+}
+
+function b64url(buf: Buffer): string {
+  return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function b64urlDecode(s: string): Buffer {
+  s = s.replace(/-/g, '+').replace(/_/g, '/');
+  while (s.length % 4) s += '=';
+  return Buffer.from(s, 'base64');
+}
+
+export function signSession(payload: Omit<SessionPayload, 'exp'>, ttlSeconds = SESSION_MAX_AGE_SECONDS): string {
+  const exp = Math.floor(Date.now() / 1000) + ttlSeconds;
+  const body = JSON.stringify({ ...payload, exp });
+  const bodyB64 = b64url(Buffer.from(body, 'utf8'));
+  const sig = crypto.createHmac('sha256', getSecret()).update(bodyB64).digest();
+  return `${bodyB64}.${b64url(sig)}`;
+}
+
+export function verifySession(token: string | undefined | null): SessionPayload | null {
+  if (!token) return null;
+  const parts = token.split('.');
+  if (parts.length !== 2) return null;
+  const [bodyB64, sigB64] = parts;
+
+  const expectedSig = crypto.createHmac('sha256', getSecret()).update(bodyB64).digest();
+  const givenSig = b64urlDecode(sigB64);
+  if (expectedSig.length !== givenSig.length || !crypto.timingSafeEqual(expectedSig, givenSig)) {
+    return null;
+  }
+
   try {
-    // 1. Check for API Key in headers (for programmatic access)
+    const payload = JSON.parse(b64urlDecode(bodyB64).toString('utf8')) as SessionPayload;
+    if (!payload.id || !payload.username || !payload.role || !payload.exp) return null;
+    if (payload.exp < Math.floor(Date.now() / 1000)) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+export async function getSession(): Promise<SessionPayload | null> {
+  try {
+    // 1. API Key (validated by hash against DB)
     const headerList = await headers();
     const apiKey = headerList.get('x-api-key');
-
     if (apiKey) {
-      console.log('[getSession] Checking API key:', apiKey.substring(0, 10) + '...');
-
-      // 1. Check if the key exists in the database
-      const keyData = await prisma.apiKey.findFirst({
-        where: { key: apiKey, isActive: true },
-        include: { user: true }
-      });
-
-      console.log('[getSession] keyData:', keyData ? 'found' : 'not found');
-
-      if (keyData) {
-        // Update last used timestamp (non-blocking)
-        prisma.apiKey.update({
-          where: { id: keyData.id },
-          data: { lastUsed: new Date() }
-        }).catch(err => console.error('Error updating lastUsed:', err));
-
-        return {
-          id: keyData.user.id,
-          username: keyData.user.username,
-          role: keyData.user.role,
-          isApiKey: true // Flag to identify API Key access
-        };
-      }
-
-      // 2. Legacy/Master Key check (Optional fallback)
-      const masterKey = process.env.API_KEY;
-      console.log('[getSession] masterKey exists:', !!masterKey);
-      if (masterKey && apiKey === masterKey) {
-        return { id: 'system', username: 'api_user', role: 'ADMIN', isApiKey: true };
-      }
+      const auth = await lookupApiKey(apiKey);
+      if (!auth) return null;
+      return {
+        id: auth.userId,
+        username: auth.username,
+        role: auth.role,
+        exp: Math.floor(Date.now() / 1000) + 60,
+        isApiKey: true,
+      };
     }
 
-    // 2. Fallback to Cookie session
+    // 2. Signed cookie session
     const cookieStore = await cookies();
-    const session = cookieStore.get('yourls_session');
-
-    if (!session) return null;
-
-    try {
-      return JSON.parse(session.value);
-    } catch (e) {
-      console.error('[getSession] Cookie parse error:', e);
-      return null;
-    }
+    const token = cookieStore.get(SESSION_COOKIE)?.value;
+    return verifySession(token);
   } catch (e) {
-    console.error('[getSession] Unexpected error:', e);
+    console.error('[getSession] error:', e);
     return null;
   }
 }

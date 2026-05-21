@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/session';
-import crypto from 'crypto';
+import { generateApiKey } from '@/lib/api-key';
 
 export async function GET() {
   try {
@@ -10,7 +10,17 @@ export async function GET() {
 
     const keys = await prisma.apiKey.findMany({
       where: session.role === 'ADMIN' ? {} : { userId: session.id },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        keyPrefix: true,
+        createdAt: true,
+        expiresAt: true,
+        lastUsed: true,
+        isActive: true,
+        userId: true,
+      },
     });
 
     return NextResponse.json({ success: true, data: keys });
@@ -25,23 +35,36 @@ export async function POST(request: Request) {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { name } = await request.json();
+    const { name, expiresInDays } = await request.json();
     if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 });
 
-    // Generate a secure random key
-    const rawKey = crypto.randomBytes(32).toString('hex');
-    const apiKeyPrefix = 'yn_'; // YOURLS Node prefix
-    const fullKey = apiKeyPrefix + rawKey;
+    const { raw, hash, prefix } = generateApiKey();
+
+    const expiresAt =
+      typeof expiresInDays === 'number' && expiresInDays > 0
+        ? new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000)
+        : null;
 
     const newKey = await prisma.apiKey.create({
       data: {
-        key: fullKey,
+        keyHash: hash,
+        keyPrefix: prefix,
         name,
-        userId: session.id
-      }
+        userId: session.id,
+        expiresAt,
+      },
+      select: {
+        id: true,
+        name: true,
+        keyPrefix: true,
+        createdAt: true,
+        expiresAt: true,
+        isActive: true,
+      },
     });
 
-    return NextResponse.json({ success: true, data: newKey });
+    // The raw key is returned exactly once. Client must store it; server cannot recover it later.
+    return NextResponse.json({ success: true, data: { ...newKey, key: raw } });
   } catch (error) {
     console.error('Error creating key:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -57,7 +80,6 @@ export async function DELETE(request: Request) {
     const { id } = await request.json();
     if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
 
-    // Ensure user owns the key or is admin
     const key = await prisma.apiKey.findUnique({ where: { id } });
     if (!key) return NextResponse.json({ error: 'Key not found' }, { status: 404 });
 

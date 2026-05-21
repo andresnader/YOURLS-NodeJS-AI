@@ -1,88 +1,116 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { rateLimit } from './lib/rate-limit';
-import prisma from './lib/prisma';
+import { lookupApiKey } from './lib/api-key';
+import { SESSION_COOKIE, verifySession, type SessionPayload } from './lib/session';
 
-const limiter = rateLimit({
+const shortenLimiter = rateLimit({
   id: 'api-public-shorten',
-  limit: 10, // 10 requests
-  windowMs: 60 * 1000 // per 1 minute
+  limit: 10,
+  windowMs: 60 * 1000,
 });
 
-function isValidSession(sessionValue: string | undefined): boolean {
-  if (!sessionValue) return false;
-  try {
-    const session = JSON.parse(sessionValue);
-    return !!(session.id && session.username);
-  } catch {
-    return false;
-  }
+const apiLimiter = rateLimit({
+  id: 'api-authenticated',
+  limit: 120,
+  windowMs: 60 * 1000,
+});
+
+const PUBLIC_API_ROUTES: Array<{ path: string; methods: string[] }> = [
+  { path: '/api/auth', methods: ['POST', 'DELETE'] },
+  { path: '/api/shorten', methods: ['POST'] },
+];
+
+const API_KEY_ALLOWED_ROUTES = ['/api/shorten', '/api/stats', '/api/test', '/api/links'];
+
+function getIp(request: NextRequest): string {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    '127.0.0.1'
+  );
 }
 
-async function isValidApiKey(apiKey: string | null): Promise<boolean> {
-  if (!apiKey) return false;
-  try {
-    const keyData = await prisma.apiKey.findFirst({
-      where: { key: apiKey, isActive: true }
-    });
-    return !!keyData;
-  } catch (e) {
-    console.error('[proxy] isValidApiKey error:', e);
-    return false;
-  }
+function isPublicApi(pathname: string, method: string): boolean {
+  return PUBLIC_API_ROUTES.some(r => pathname === r.path && r.methods.includes(method));
+}
+
+function isApiKeyRoute(pathname: string): boolean {
+  return API_KEY_ALLOWED_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'));
 }
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const sessionCookie = request.cookies.get('yourls_session');
-  const isAuthenticated = isValidSession(sessionCookie?.value);
+  const method = request.method;
 
-  // Check for API Key in headers
-  const apiKey = request.headers.get('x-api-key');
-  const hasValidApiKey = await isValidApiKey(apiKey);
-
-  // 1. Rate Limiting for Public Shorten API
-  if (pathname === '/api/shorten' && request.method === 'POST') {
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || request.headers.get('x-real-ip') || '127.0.0.1';
-    const { success, remaining, reset } = limiter.check(ip);
-
+  // Public shorten: rate limit only
+  if (pathname === '/api/shorten' && method === 'POST') {
+    const { success, remaining, reset } = shortenLimiter.check(getIp(request));
     if (!success) {
       return NextResponse.json(
-        { error: 'System busy. Level 429: Rate limit exceeded.' },
+        { error: 'Rate limit exceeded', code: 'rate_limited' },
         {
           status: 429,
           headers: {
             'X-RateLimit-Limit': '10',
             'X-RateLimit-Remaining': remaining.toString(),
-            'X-RateLimit-Reset': reset.toString()
-          }
-        }
+            'X-RateLimit-Reset': reset.toString(),
+          },
+        },
       );
     }
   }
 
-  // 2. Auth Protection for Admin Routes - use client-side check via localStorage
-  // The proxy only checks if there's ANY session, real validation is done client-side
-  // This allows localStorage-based auth to work
+  // Determine session
+  const cookieToken = request.cookies.get(SESSION_COOKIE)?.value;
+  const cookieSession: SessionPayload | null = verifySession(cookieToken);
 
-  // 3. Auth Protection for sensitive API routes
-  // Allow POST to /api/shorten (Public usage) and /api/auth (Login/Logout)
-  // Also allow API Key authentication for programmatic access
-  const isPublicApi =
-    (pathname === '/api/shorten' && request.method === 'POST') ||
-    (pathname === '/api/auth' && (request.method === 'POST' || request.method === 'DELETE'));
+  const apiKey = request.headers.get('x-api-key');
+  const apiKeyData = apiKey ? await lookupApiKey(apiKey) : null;
 
-  // Routes that allow API Key authentication (for WordPress integration, etc.)
-  const apiKeyAllowedRoutes = [
-    '/api/shorten',
-    '/api/stats',
-    '/api/test',
-  ];
-  const isApiKeyRoute = apiKeyAllowedRoutes.some(route => pathname.startsWith(route));
 
-  if (pathname.startsWith('/api') && !isPublicApi) {
-    if (!isAuthenticated && !(hasValidApiKey && isApiKeyRoute)) {
-      return NextResponse.json({ error: 'Authentication required for network protocol access.' }, { status: 401 });
+  const isAuthenticated = !!cookieSession || !!apiKeyData;
+
+  // /admin/* → require cookie session (no API key for browser UI)
+  if (pathname.startsWith('/admin')) {
+    if (!cookieSession) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      url.searchParams.set('next', pathname);
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // /api/* → require auth (cookie or API key), except whitelisted public endpoints
+  if (pathname.startsWith('/api') && !isPublicApi(pathname, method)) {
+    if (!isAuthenticated) {
+      return NextResponse.json(
+        { error: 'Authentication required', code: 'unauthenticated' },
+        { status: 401 },
+      );
+    }
+    // API keys only allowed on whitelisted routes
+    if (apiKeyData && !cookieSession && !isApiKeyRoute(pathname)) {
+      return NextResponse.json(
+        { error: 'API key not permitted for this route', code: 'forbidden' },
+        { status: 403 },
+      );
+    }
+    // Global rate limit for authenticated API access
+    const limitKey = cookieSession?.id || apiKeyData?.userId || getIp(request);
+    const { success, remaining, reset } = apiLimiter.check(`api:${limitKey}`);
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', code: 'rate_limited' },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': '120',
+            'X-RateLimit-Remaining': remaining.toString(),
+            'X-RateLimit-Reset': reset.toString(),
+          },
+        },
+      );
     }
   }
 

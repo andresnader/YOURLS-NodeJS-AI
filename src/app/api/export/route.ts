@@ -1,10 +1,20 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getSession } from '@/lib/session';
 
 export async function GET() {
   try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (session.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const urls = await prisma.url.findMany({
-      orderBy: { createdAt: 'desc' }
+      where: session.role === 'ADMIN' ? {} : { userId: session.id },
+      orderBy: { createdAt: 'desc' },
     });
 
     if (urls.length === 0) {

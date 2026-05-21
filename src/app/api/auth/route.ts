@@ -1,70 +1,60 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '../../../../prisma/generated/client';
 import bcrypt from 'bcryptjs';
+import prisma from '@/lib/prisma';
+import { SESSION_COOKIE, signSession } from '@/lib/session';
 
-const prisma = new PrismaClient();
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { username, password } = body;
-    
+    const { username, password } = await request.json();
     if (!username || !password) {
       return NextResponse.json({ error: 'Username and password are required' }, { status: 400 });
     }
-    
-    console.log(`Login attempt for user: ${username}`);
 
-    const user = await prisma.user.findUnique({
-      where: { username }
-    });
-
+    const user = await prisma.user.findUnique({ where: { username } });
     if (!user) {
-      console.log(`User not found: ${username}`);
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
-    console.log(`Password match for ${username}: ${isMatch}`);
-
-    if (isMatch) {
-      // Set an HTTP-only cookie to identify the session
-      const response = NextResponse.json({ 
-        success: true, 
-        user: { id: user.id, username: user.username, role: user.role } 
-      });
-      
-      const sessionData = JSON.stringify({
-        id: user.id,
-        username: user.username,
-        role: user.role
-      });
-
-      // Try to set cookie (non-httpOnly so client can also set it)
-      // This is a backup - localStorage is the primary session store
-      response.cookies.set('yourls_session', JSON.stringify(sessionData), {
-        httpOnly: false, // Allow client-side access
-        secure: false,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7
-      });
-
-      console.log('Auth success - session cookie set, session data:', sessionData);
-      return response;
+    if (!isMatch) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
-    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    const token = signSession(
+      { id: user.id, username: user.username, role: user.role as 'ADMIN' | 'USER' },
+      SESSION_MAX_AGE_SECONDS,
+    );
+
+    const response = NextResponse.json({
+      success: true,
+      user: { id: user.id, username: user.username, role: user.role },
+    });
+
+    response.cookies.set(SESSION_COOKIE, token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: SESSION_MAX_AGE_SECONDS,
+    });
+
+    return response;
   } catch (error) {
     console.error('Auth error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
 
-// For Logout
 export async function DELETE() {
   const response = NextResponse.json({ success: true });
-  response.cookies.delete('yourls_session');
+  response.cookies.set(SESSION_COOKIE, '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+  });
   return response;
 }
-
