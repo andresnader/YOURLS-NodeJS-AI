@@ -2,8 +2,16 @@
 
 import { useState } from "react";
 import {
-  ExternalLink, BarChart3, Copy, Edit2, Trash2,
-  QrCode, X, Check, Clock, Globe, ShieldCheck, ShieldAlert
+  ExternalLink,
+  BarChart3,
+  Copy,
+  Edit2,
+  Trash2,
+  QrCode,
+  X,
+  Check,
+  Clock,
+  Globe,
 } from "lucide-react";
 import QRCode from "react-qr-code";
 import { useRouter } from "next/navigation";
@@ -112,47 +120,84 @@ export default function LinkTable({
 
   if (urls.length === 0) {
     return (
-      <div className="glass rounded-2xl p-12 text-center animate-fade-in relative transition-colors duration-300">
-        <Globe size={40} className="mx-auto mb-4 text-muted" />
-        <p className="text-lg font-medium text-secondary">
-          {t("admin.all_links")}
+      <div
+        className="p-16 text-center animate-fade-in border"
+        style={{
+          background: "var(--bg-surface)",
+          borderColor: "var(--border)",
+          borderRadius: "var(--radius-lg)",
+        }}
+      >
+        <Globe
+          size={36}
+          strokeWidth={1.5}
+          className="mx-auto mb-5"
+          style={{ color: "var(--text-muted)" }}
+        />
+        <p className="font-serif text-[22px]" style={{ color: "var(--text-primary)" }}>
+          No links yet
         </p>
-        <p className="text-sm mt-1 text-muted">
+        <p className="text-[14px] mt-2" style={{ color: "var(--text-muted)" }}>
           Shorten your first URL to get started.
         </p>
       </div>
     );
   }
 
+  const cellPad = "px-5 py-4";
+  const headPad = "px-5 py-3";
+
   return (
     <>
-      <div className="glass rounded-2xl overflow-hidden animate-slide-up transition-colors duration-300">
+      <div
+        className="overflow-hidden border animate-fade-in"
+        style={{
+          background: "var(--bg-surface)",
+          borderColor: "var(--border)",
+          borderRadius: "var(--radius-lg)",
+        }}
+      >
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-[14px]">
             <thead>
-              <tr className="bg-white/[0.02] border-b border-glass transition-colors">
-                <th className="text-left px-4 py-3 w-10">
+              <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                <th className={`${headPad} text-left w-10`}>
                   <input
                     type="checkbox"
                     checked={allSelected}
                     onChange={onSelectAll}
-                    className="rounded cursor-pointer"
+                    className="cursor-pointer"
                     style={{ accentColor: "var(--color-primary)" }}
                   />
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-[11px] uppercase tracking-[0.12em] text-muted">
-                  Short URL
+                <th
+                  className={`${headPad} text-left text-[11px] font-medium uppercase tracking-[0.1em]`}
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  Short link
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-[11px] uppercase tracking-[0.12em] text-muted hidden md:table-cell">
+                <th
+                  className={`${headPad} text-left text-[11px] font-medium uppercase tracking-[0.1em] hidden md:table-cell`}
+                  style={{ color: "var(--text-muted)" }}
+                >
                   Destination
                 </th>
-                <th className="text-center px-4 py-3 font-semibold text-[11px] uppercase tracking-[0.12em] text-muted">
+                <th
+                  className={`${headPad} text-right text-[11px] font-medium uppercase tracking-[0.1em]`}
+                  style={{ color: "var(--text-muted)" }}
+                >
                   Clicks
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-[11px] uppercase tracking-[0.12em] text-muted hidden lg:table-cell">
+                <th
+                  className={`${headPad} text-left text-[11px] font-medium uppercase tracking-[0.1em] hidden lg:table-cell`}
+                  style={{ color: "var(--text-muted)" }}
+                >
                   Status
                 </th>
-                <th className="text-right px-4 py-3 font-semibold text-[11px] uppercase tracking-[0.12em] text-muted">
+                <th
+                  className={`${headPad} text-right text-[11px] font-medium uppercase tracking-[0.1em]`}
+                  style={{ color: "var(--text-muted)" }}
+                >
                   Actions
                 </th>
               </tr>
@@ -161,137 +206,191 @@ export default function LinkTable({
               {urls.map((item) => (
                 <tr
                   key={item.keyword}
-                  className="group transition-colors border-b border-glass hover:bg-white/[0.02]"
+                  className="group transition-colors"
+                  style={{ borderBottom: "1px solid var(--border-soft)" }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = "var(--bg-elevated)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "transparent")
+                  }
                 >
-                  <td className="px-4 py-3.5">
+                  <td className={cellPad}>
                     <input
                       type="checkbox"
                       checked={selectedKeys.has(item.keyword)}
                       onChange={() => onToggleSelect(item.keyword)}
-                      className="rounded cursor-pointer"
+                      className="cursor-pointer"
                       style={{ accentColor: "var(--color-primary)" }}
                     />
                   </td>
-                  <td className="px-4 py-3.5">
+                  <td className={cellPad}>
                     {editingKey === item.keyword ? (
-                      <div className="space-y-2">
+                      <div className="space-y-2 max-w-md">
                         <input
                           type="text"
                           value={editTitle}
                           onChange={(e) => setEditTitle(e.target.value)}
                           placeholder="Title"
-                          className="input-glass text-xs py-1.5"
+                          className="input-glass text-[13px] py-1.5"
                         />
                         <input
                           type="url"
                           value={editUrl}
                           onChange={(e) => setEditUrl(e.target.value)}
-                          className="input-glass text-xs py-1.5"
+                          className="input-glass text-[13px] py-1.5"
                         />
                       </div>
                     ) : (
                       <div className="flex items-start gap-3">
                         {item.favicon ? (
-                          <img src={item.favicon} alt="" className="w-5 h-5 rounded mt-1 shrink-0" />
+                          <img
+                            src={item.favicon}
+                            alt=""
+                            className="w-5 h-5 rounded mt-0.5 shrink-0"
+                          />
                         ) : (
-                          <div className="w-5 h-5 rounded bg-white/5 flex items-center justify-center mt-1 shrink-0">
-                             <Globe size={10} className="text-muted" />
+                          <div
+                            className="w-5 h-5 rounded mt-0.5 shrink-0 flex items-center justify-center"
+                            style={{ background: "var(--bg-hover)" }}
+                          >
+                            <Globe
+                              size={10}
+                              style={{ color: "var(--text-muted)" }}
+                            />
                           </div>
                         )}
-                        <div className="overflow-hidden min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <a
-                              href={`/${item.keyword}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-semibold text-sm hover:underline text-primary truncate"
-                            >
-                              /{item.keyword}
-                            </a>
-                            <ExternalLink size={12} className="text-muted shrink-0" />
-                          </div>
-                          <p className="text-[10px] opacity-40 uppercase tracking-widest truncate">
-                             {item.title || "No Title"}
+                        <div className="min-w-0">
+                          <a
+                            href={`/${item.keyword}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-[13px] inline-flex items-center gap-1 hover:underline"
+                            style={{ color: "var(--color-primary)" }}
+                          >
+                            /{item.keyword}
+                            <ExternalLink size={11} strokeWidth={1.75} />
+                          </a>
+                          <p
+                            className="text-[13px] truncate mt-0.5"
+                            style={{ color: "var(--text-primary)" }}
+                          >
+                            {item.title || (
+                              <span style={{ color: "var(--text-muted)" }}>
+                                Untitled
+                              </span>
+                            )}
                           </p>
                         </div>
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3.5 hidden md:table-cell">
-                    <p className="text-xs truncate max-w-[300px] text-secondary">
+                  <td className={`${cellPad} hidden md:table-cell`}>
+                    <p
+                      className="text-[13px] truncate max-w-[320px]"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       {item.url}
                     </p>
                   </td>
-                  <td className="px-4 py-3.5 text-center">
+                  <td className={`${cellPad} text-right`}>
                     <Link
                       href={`/admin/stats/${item.keyword}`}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all text-primary hover:bg-primary/10"
+                      className="inline-flex items-center gap-1.5 font-mono text-[13px] tabular-nums cursor-pointer hover:underline"
+                      style={{ color: "var(--text-primary)" }}
                     >
-                      <BarChart3 size={13} />
                       {item.clicks.toLocaleString()}
+                      <BarChart3
+                        size={12}
+                        strokeWidth={1.75}
+                        style={{ color: "var(--text-muted)" }}
+                      />
                     </Link>
                   </td>
-                  <td className="px-4 py-3.5 hidden lg:table-cell">
+                  <td className={`${cellPad} hidden lg:table-cell`}>
                     <div className="flex flex-col gap-1">
-                      <div className={`flex items-center gap-1 text-[10px] font-bold ${item.isHealthy ? "text-success" : "text-danger"}`}>
-                        {item.isHealthy ? <ShieldCheck size={10}/> : <ShieldAlert size={10}/>}
-                        {item.isHealthy ? "HEALTHY" : "DOWN"}
+                      <div className="flex items-center gap-1.5 text-[11px]">
+                        <span
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{
+                            background: item.isHealthy
+                              ? "var(--color-success)"
+                              : "var(--color-danger)",
+                          }}
+                        />
+                        <span
+                          style={{
+                            color: item.isHealthy
+                              ? "var(--color-success)"
+                              : "var(--color-danger)",
+                          }}
+                        >
+                          {item.isHealthy ? "Healthy" : "Down"}
+                        </span>
                       </div>
-                      <div className="flex items-center gap-1.5 text-[10px] text-muted">
-                        <Clock size={10} />
+                      <div
+                        className="flex items-center gap-1.5 text-[11px]"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        <Clock size={10} strokeWidth={1.75} />
                         {timeAgo(item.createdAt)}
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3.5">
-                    <div className="flex items-center justify-end gap-1">
+                  <td className={cellPad}>
+                    <div className="flex items-center justify-end gap-0.5">
                       {editingKey === item.keyword ? (
                         <>
                           <button
                             onClick={() => saveEdit(item.keyword)}
-                            className="p-1.5 rounded-md transition-colors text-success"
+                            className="p-1.5 cursor-pointer rounded transition-colors"
+                            style={{ color: "var(--color-success)" }}
                             title="Save"
                           >
-                            <Check size={15} />
+                            <Check size={15} strokeWidth={1.75} />
                           </button>
                           <button
                             onClick={cancelEdit}
-                            className="p-1.5 rounded-md transition-colors text-danger"
+                            className="p-1.5 cursor-pointer rounded transition-colors"
+                            style={{ color: "var(--color-danger)" }}
                             title="Cancel"
                           >
-                            <X size={15} />
+                            <X size={15} strokeWidth={1.75} />
                           </button>
                         </>
                       ) : (
                         <>
-                          <button
-                            onClick={() => handleCopy(item.keyword)}
-                            className="p-1.5 rounded-md transition-all opacity-0 group-hover:opacity-100 text-muted hover:text-primary hover:bg-primary/10"
-                            title="Copy short URL"
-                          >
-                            <Copy size={14} />
-                          </button>
-                          <button
-                            onClick={() => setShowQR(item.keyword)}
-                            className="p-1.5 rounded-md transition-all opacity-0 group-hover:opacity-100 text-muted hover:text-accent hover:bg-accent/10"
-                            title="QR code"
-                          >
-                            <QrCode size={14} />
-                          </button>
-                          <button
-                            onClick={() => startEdit(item)}
-                            className="p-1.5 rounded-md transition-all opacity-0 group-hover:opacity-100 text-muted hover:text-amber-400 hover:bg-amber-400/10"
-                            title="Edit"
-                          >
-                            <Edit2 size={14} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(item.keyword)}
-                            className="p-1.5 rounded-md transition-all opacity-0 group-hover:opacity-100 text-muted hover:text-danger hover:bg-danger/10"
-                            title="Delete"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                          {[
+                            { fn: () => handleCopy(item.keyword), icon: Copy, label: "Copy" },
+                            { fn: () => setShowQR(item.keyword), icon: QrCode, label: "QR" },
+                            { fn: () => startEdit(item), icon: Edit2, label: "Edit" },
+                            { fn: () => handleDelete(item.keyword), icon: Trash2, label: "Delete" },
+                          ].map((a, idx) => {
+                            const isDanger = a.label === "Delete";
+                            return (
+                              <button
+                                key={idx}
+                                onClick={a.fn}
+                                title={a.label}
+                                className="p-1.5 cursor-pointer rounded transition-colors opacity-60 group-hover:opacity-100"
+                                style={{ color: "var(--text-muted)" }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.color = isDanger
+                                    ? "var(--color-danger)"
+                                    : "var(--text-primary)";
+                                  e.currentTarget.style.background =
+                                    "var(--bg-hover)";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.color =
+                                    "var(--text-muted)";
+                                  e.currentTarget.style.background = "transparent";
+                                }}
+                              >
+                                <a.icon size={14} strokeWidth={1.75} />
+                              </button>
+                            );
+                          })}
                         </>
                       )}
                     </div>
@@ -306,35 +405,52 @@ export default function LinkTable({
       {/* QR Modal */}
       {showQR && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-void/80 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
+          style={{ background: "rgba(26, 35, 50, 0.55)" }}
           onClick={() => setShowQR(null)}
         >
           <div
-            className="glass p-8 rounded-2xl flex flex-col items-center gap-5 relative animate-zoom-in max-w-sm w-full shadow-glow-sm"
+            className="p-8 flex flex-col items-center gap-5 relative max-w-sm w-full border"
+            style={{
+              background: "var(--bg-surface)",
+              borderColor: "var(--border)",
+              borderRadius: "var(--radius-lg)",
+              boxShadow: "var(--shadow-deep)",
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setShowQR(null)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg text-muted hover:text-primary transition-colors"
+              aria-label="Close"
+              className="absolute top-4 right-4 p-1.5 rounded cursor-pointer transition-colors"
+              style={{ color: "var(--text-muted)" }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.color = "var(--text-primary)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.color = "var(--text-muted)")
+              }
             >
-              <X size={18} />
+              <X size={18} strokeWidth={1.75} />
             </button>
-            <h3 className="text-xl font-bold text-primary">
+            <h3
+              className="font-serif text-[22px]"
+              style={{ color: "var(--text-primary)" }}
+            >
               QR Code
             </h3>
-            <p
-              className="text-xs font-semibold font-mono px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20"
+            <span className="badge-cyber">/{showQR}</span>
+            <div
+              className="p-5 rounded"
+              style={{ background: "#FFFFFF", borderRadius: "var(--radius-md)" }}
             >
-              /{showQR}
-            </p>
-            <div className="p-5 bg-white rounded-2xl">
               <QRCode value={`${window.location.origin}/${showQR}`} size={200} />
             </div>
             <button
               onClick={() => handleCopy(showQR)}
-              className="btn-cyber w-full rounded-2xl py-3 text-sm"
+              className="btn-primary w-full py-3 text-[14px]"
             >
-              <Copy size={14} />
+              <Copy size={14} strokeWidth={1.75} />
               Copy Short URL
             </button>
           </div>
@@ -343,4 +459,3 @@ export default function LinkTable({
     </>
   );
 }
-

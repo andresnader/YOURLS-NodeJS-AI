@@ -150,21 +150,22 @@ export default function AdminLinkManager() {
       {/* Bulk actions bar */}
       {selectedKeys.size > 0 && (
         <div
-          className="flex items-center gap-3 px-4 py-2.5 rounded-xl animate-slide-down"
+          className="flex items-center gap-3 px-4 py-2.5 animate-slide-down border"
           style={{
-            background: "rgba(0, 240, 255, 0.04)",
-            border: "1px solid rgba(0, 240, 255, 0.12)",
+            background: "var(--bg-elevated)",
+            borderColor: "var(--border)",
+            borderRadius: "var(--radius-md)",
           }}
         >
-          <span className="text-sm font-medium" style={{ color: "#00F0FF" }}>
+          <span className="text-[13px] font-medium" style={{ color: "var(--text-primary)" }}>
             {selectedKeys.size} selected
           </span>
-          <button onClick={handleBulkDelete} className="btn-danger text-xs py-1.5 px-3">
-            <Trash2 size={13} /> Delete Selected
+          <button onClick={handleBulkDelete} className="btn-danger text-[12px] py-1.5 px-3">
+            <Trash2 size={13} strokeWidth={1.75} /> Delete Selected
           </button>
           <button
             onClick={() => setSelectedKeys(new Set())}
-            className="btn-ghost text-xs py-1.5 px-3"
+            className="btn-ghost text-[12px] py-1.5 px-3"
           >
             Clear
           </button>
@@ -173,12 +174,24 @@ export default function AdminLinkManager() {
 
       {/* Table */}
       {loading && urls.length === 0 ? (
-        <div className="glass rounded-2xl p-12 text-center animate-fade-in">
+        <div
+          className="p-16 text-center animate-fade-in border"
+          style={{
+            background: "var(--bg-surface)",
+            borderColor: "var(--border)",
+            borderRadius: "var(--radius-lg)",
+          }}
+        >
           <div
-            className="animate-spin h-8 w-8 border-2 border-t-transparent rounded-full mx-auto mb-4"
-            style={{ borderColor: "#00F0FF", borderTopColor: "transparent" }}
+            className="animate-spin h-6 w-6 border-2 rounded-full mx-auto mb-4"
+            style={{
+              borderColor: "var(--border)",
+              borderTopColor: "var(--color-primary)",
+            }}
           />
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>Loading transmissions…</p>
+          <p className="text-[13px]" style={{ color: "var(--text-muted)" }}>
+            Loading links…
+          </p>
         </div>
       ) : (
         <LinkTable
@@ -192,11 +205,9 @@ export default function AdminLinkManager() {
 
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-            {pagination.total} total transmission{pagination.total !== 1 ? "s" : ""}
-          </span>
-        </div>
+        <span className="text-[12px]" style={{ color: "var(--text-muted)" }}>
+          {pagination.total} total link{pagination.total !== 1 ? "s" : ""}
+        </span>
         <Pagination
           page={pagination.page}
           totalPages={pagination.totalPages}
