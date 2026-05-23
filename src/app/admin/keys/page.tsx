@@ -1,12 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Key, Plus, Trash2, Copy, CheckCircle2, Loader2, Calendar, Clock, ShieldCheck, AlertCircle } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Copy,
+  CheckCircle2,
+  Loader2,
+  AlertCircle,
+  Key,
+} from "lucide-react";
 import { useTranslation } from "@/lib/LanguageContext";
+
+type ApiKey = {
+  id: string;
+  name: string;
+  createdAt: string;
+  lastUsed: string | null;
+};
 
 export default function ApiKeysPage() {
   const { t } = useTranslation();
-  const [keys, setKeys] = useState<any[]>([]);
+  const [keys, setKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [newKeyName, setNewKeyName] = useState("");
@@ -15,7 +30,7 @@ export default function ApiKeysPage() {
 
   const fetchKeys = async () => {
     try {
-      const res = await fetch("/api/keys", { credentials: 'include' });
+      const res = await fetch("/api/keys", { credentials: "include" });
       const data = await res.json();
       if (data.success) setKeys(data.data);
     } catch (err) {
@@ -37,8 +52,8 @@ export default function ApiKeysPage() {
       const res = await fetch("/api/keys", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: 'include',
-        body: JSON.stringify({ name: newKeyName })
+        credentials: "include",
+        body: JSON.stringify({ name: newKeyName }),
       });
       const data = await res.json();
       if (data.success) {
@@ -54,17 +69,17 @@ export default function ApiKeysPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm(t("common.confirm_delete") || "Are you sure?")) return;
+    if (!confirm("Revoke this key?")) return;
     try {
       const res = await fetch("/api/keys", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        credentials: 'include',
-        body: JSON.stringify({ id })
+        credentials: "include",
+        body: JSON.stringify({ id }),
       });
       const data = await res.json();
       if (data.success) {
-        setKeys(keys.filter(k => k.id !== id));
+        setKeys(keys.filter((k) => k.id !== id));
       }
     } catch (err) {
       console.error(err);
@@ -78,132 +93,251 @@ export default function ApiKeysPage() {
   };
 
   return (
-    <div className="px-6 py-8 md:px-10 space-y-8 animate-fade-in relative z-10">
-      <header className="relative">
-        <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-lg bg-pink-500/10 border border-pink-500/20">
-                <Key className="text-pink-500" size={20} />
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight text-primary">
-                {t("common.api_keys")}
-            </h1>
-        </div>
-        <p className="text-secondary max-w-2xl">
-            Gestione sus credenciales para integraciones externas como WordPress, plugins de terceros o automatizaciones personalizadas.
+    <div className="max-w-6xl mx-auto px-6 md:px-12 py-10 md:py-14 space-y-12 animate-fade-in">
+      <header className="space-y-3">
+        <p className="text-eyebrow">{t("common.api_keys")}</p>
+        <h1 className="text-h1" style={{ color: "var(--text-primary)" }}>
+          API credentials
+        </h1>
+        <p
+          className="max-w-prose text-[15px] leading-relaxed"
+          style={{ color: "var(--text-secondary)" }}
+        >
+          Generate API keys for integrations such as the WordPress plugin,
+          third-party automations, or your own scripts. Treat each key like a
+          password — anyone with one can shorten links on your behalf.
         </p>
       </header>
 
-      <section className="glass rounded-[2rem] p-8 border border-glass shadow-2xl relative overflow-hidden group">
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-pink-500/10 rounded-full blur-[100px] group-hover:bg-pink-500/20 transition-all duration-700" />
-        
-        <h2 className="text-xs font-semibold uppercase tracking-[0.2em] mb-6 flex items-center gap-2 text-muted">
-          <Plus size={14} /> Generar Nueva Clave
-        </h2>
+      <hr className="rule" />
 
-        <form onSubmit={handleCreate} className="flex flex-col md:flex-row gap-4 relative z-10">
-          <div className="flex-1 relative">
-            <input 
-                type="text" 
-                placeholder="Nombre de la clave (ej: WordPress Ameizin)"
-                value={newKeyName}
-                onChange={(e) => setNewKeyName(e.target.value)}
-                className="w-full bg-void/50 border border-glass rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all placeholder:text-muted/50"
-                required
-            />
-          </div>
-          <button 
-            type="submit" 
-            disabled={creating}
-            className="bg-primary text-black font-bold px-8 py-4 rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-glow flex items-center justify-center gap-2 disabled:opacity-50"
+      {/* Create */}
+      <section
+        className="p-8 space-y-6 border"
+        style={{
+          background: "var(--bg-surface)",
+          borderColor: "var(--border)",
+          borderRadius: "var(--radius-lg)",
+        }}
+      >
+        <header>
+          <p className="text-eyebrow">New credential</p>
+          <h2
+            className="font-serif text-[22px] mt-1"
+            style={{ color: "var(--text-primary)" }}
           >
-            {creating ? <Loader2 size={20} className="animate-spin" /> : <ShieldCheck size={20} />}
-            Generar Credencial
+            Generate a key
+          </h2>
+        </header>
+
+        <form
+          onSubmit={handleCreate}
+          className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3"
+        >
+          <input
+            type="text"
+            placeholder="e.g. WordPress Ameizin"
+            value={newKeyName}
+            onChange={(e) => setNewKeyName(e.target.value)}
+            className="input-glass"
+            required
+          />
+          <button
+            type="submit"
+            disabled={creating}
+            className="btn-primary px-6 whitespace-nowrap"
+          >
+            {creating ? (
+              <Loader2 size={16} strokeWidth={1.75} className="animate-spin" />
+            ) : (
+              <Plus size={16} strokeWidth={1.75} />
+            )}
+            Generate
           </button>
         </form>
 
         {lastCreatedKey && (
-          <div className="mt-8 p-6 rounded-2xl bg-primary/10 border border-primary/20 animate-slide-up relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4">
-                <AlertCircle size={40} className="text-primary opacity-20" />
-            </div>
-            
-            <p className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
-               <CheckCircle2 size={16} /> Clave Generada con Éxito
+          <div
+            className="p-5 space-y-3 animate-slide-up border"
+            style={{
+              background: "var(--bg-elevated)",
+              borderColor: "var(--border-glow)",
+              borderRadius: "var(--radius-md)",
+            }}
+          >
+            <p
+              className="text-[13px] font-medium inline-flex items-center gap-1.5"
+              style={{ color: "var(--color-primary)" }}
+            >
+              <CheckCircle2 size={14} strokeWidth={1.75} />
+              Key created
             </p>
-            <div className="flex flex-col md:flex-row items-center gap-4">
-              <code className="w-full flex-1 bg-black/60 p-4 rounded-xl font-mono text-sm break-all border border-white/5 text-pink-400">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2">
+              <code
+                className="flex-1 font-mono text-[12px] p-3 break-all border"
+                style={{
+                  background: "var(--bg-surface)",
+                  borderColor: "var(--border)",
+                  borderRadius: "var(--radius-sm)",
+                  color: "var(--text-primary)",
+                }}
+              >
                 {lastCreatedKey}
               </code>
-              <button 
+              <button
                 onClick={() => copyToClipboard(lastCreatedKey)}
-                className={`w-full md:w-auto p-4 rounded-xl transition-all flex items-center justify-center gap-2 ${copySuccess ? 'bg-green-500/20 text-green-400' : 'bg-white/10 hover:bg-white/20'}`}
+                className="btn-ghost px-4 py-3 whitespace-nowrap"
               >
-                {copySuccess ? <CheckCircle2 size={20} /> : <Copy size={20} />}
-                {copySuccess ? 'Copiado' : 'Copiar'}
+                {copySuccess ? (
+                  <>
+                    <CheckCircle2 size={14} strokeWidth={1.75} /> Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy size={14} strokeWidth={1.75} /> Copy
+                  </>
+                )}
               </button>
             </div>
-            <div className="flex items-start gap-2 mt-4 text-[11px] text-pink-500/80 font-medium uppercase tracking-wider">
-              <AlertCircle size={14} className="shrink-0" />
-              <span>Importante: Por seguridad, esta es la única vez que verás esta clave completa. Guárdala en un lugar seguro.</span>
-            </div>
+            <p
+              className="text-[12px] inline-flex items-start gap-1.5"
+              style={{ color: "var(--text-muted)" }}
+            >
+              <AlertCircle
+                size={13}
+                strokeWidth={1.75}
+                className="shrink-0 mt-0.5"
+              />
+              <span>
+                This is the only time the full key is shown. Store it somewhere
+                safe.
+              </span>
+            </p>
           </div>
         )}
       </section>
 
+      {/* List */}
       <section className="space-y-4">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] mb-4 text-muted flex items-center gap-2">
-           <ShieldCheck size={14} /> Claves Activas
-        </h2>
-        
+        <h2 className="text-eyebrow">Active credentials</h2>
+
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24 glass rounded-[2rem] border border-glass">
-            <Loader2 className="animate-spin text-primary mb-4" size={40} />
-            <p className="text-muted animate-pulse">Sincronizando credenciales...</p>
+          <div
+            className="p-16 text-center border"
+            style={{
+              background: "var(--bg-surface)",
+              borderColor: "var(--border)",
+              borderRadius: "var(--radius-lg)",
+            }}
+          >
+            <Loader2
+              size={20}
+              strokeWidth={1.75}
+              className="animate-spin mx-auto mb-3"
+              style={{ color: "var(--color-primary)" }}
+            />
+            <p className="text-[13px]" style={{ color: "var(--text-muted)" }}>
+              Loading credentials…
+            </p>
           </div>
         ) : keys.length === 0 ? (
-          <div className="glass rounded-[2rem] p-16 text-center border border-dashed border-glass/30">
-            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Key size={32} className="text-muted/30" />
-            </div>
-            <p className="text-secondary font-medium">No se han encontrado claves de API.</p>
-            <p className="text-muted text-sm mt-1">Crea una clave arriba para empezar a integrar tus sistemas.</p>
+          <div
+            className="p-16 text-center border"
+            style={{
+              background: "var(--bg-surface)",
+              borderColor: "var(--border)",
+              borderRadius: "var(--radius-lg)",
+            }}
+          >
+            <Key
+              size={32}
+              strokeWidth={1.5}
+              className="mx-auto mb-4"
+              style={{ color: "var(--text-muted)" }}
+            />
+            <p
+              className="font-serif text-[20px]"
+              style={{ color: "var(--text-primary)" }}
+            >
+              No credentials yet
+            </p>
+            <p
+              className="text-[13px] mt-2"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Generate your first key above to start integrating.
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4">
-            {keys.map((k) => (
-              <div 
-                key={k.id}
-                className="glass rounded-2xl p-6 border border-glass flex flex-col md:flex-row items-start md:items-center justify-between gap-6 group hover:bg-white/5 transition-all duration-300 hover:border-pink-500/30"
-              >
-                <div className="flex items-center gap-5">
-                    <div className="w-12 h-12 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-500 group-hover:scale-110 transition-transform">
-                        <Key size={24} />
-                    </div>
-                    <div className="space-y-1">
-                        <h3 className="font-bold text-lg group-hover:text-pink-400 transition-colors">{k.name}</h3>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted">
-                            <span className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-full border border-white/5">
-                                <Calendar size={12} className="text-pink-500" /> Creada: {new Date(k.createdAt).toLocaleDateString()}
-                            </span>
-                            <span className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-full border border-white/5">
-                                <Clock size={12} className="text-pink-500" /> 
-                                {k.lastUsed ? `Último uso: ${new Date(k.lastUsed).toLocaleString()}` : 'Nunca usada'}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                   <button 
-                    onClick={() => handleDelete(k.id)}
-                    className="flex-1 md:flex-none px-5 py-3 text-red-400 hover:bg-red-400/10 rounded-xl transition-all flex items-center justify-center gap-2 border border-transparent hover:border-red-400/20 group/btn"
-                   >
-                     <Trash2 size={18} className="group-hover/btn:rotate-12 transition-transform" />
-                     <span className="font-medium">Revocar</span>
-                   </button>
-                </div>
-              </div>
-            ))}
+          <div
+            className="overflow-hidden border"
+            style={{
+              background: "var(--bg-surface)",
+              borderColor: "var(--border)",
+              borderRadius: "var(--radius-lg)",
+            }}
+          >
+            <table className="w-full text-[14px]">
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                  {["Name", "Created", "Last used", ""].map((h, i) => (
+                    <th
+                      key={i}
+                      className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-[0.1em]"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {keys.map((k) => (
+                  <tr
+                    key={k.id}
+                    style={{ borderBottom: "1px solid var(--border-soft)" }}
+                  >
+                    <td className="px-5 py-4">
+                      <p
+                        className="font-medium"
+                        style={{ color: "var(--text-primary)" }}
+                      >
+                        {k.name}
+                      </p>
+                    </td>
+                    <td
+                      className="px-5 py-4 text-[13px]"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      {new Date(k.createdAt).toLocaleDateString()}
+                    </td>
+                    <td
+                      className="px-5 py-4 text-[13px]"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {k.lastUsed
+                        ? new Date(k.lastUsed).toLocaleString()
+                        : "Never"}
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      <button
+                        onClick={() => handleDelete(k.id)}
+                        className="btn-ghost text-[12px] py-1.5 px-3"
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.color = "var(--color-danger)")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.color = "var(--text-secondary)")
+                        }
+                      >
+                        <Trash2 size={13} strokeWidth={1.75} />
+                        Revoke
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </section>
