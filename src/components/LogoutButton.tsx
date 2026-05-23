@@ -19,24 +19,24 @@ export function LogoutButton() {
     <button
       onClick={handleLogout}
       title="Logout"
-      className="w-9 h-9 flex items-center justify-center rounded-lg transition-all"
+      aria-label="Logout"
+      className="w-9 h-9 flex items-center justify-center transition-colors cursor-pointer"
       style={{
-        background: "var(--glass-bg-light)",
-        border: "1px solid var(--border-glass)",
+        background: "transparent",
+        border: "1px solid var(--border)",
         color: "var(--text-muted)",
+        borderRadius: "var(--radius-md)",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = "rgba(248, 113, 113, 0.3)";
         e.currentTarget.style.color = "var(--color-danger)";
-        e.currentTarget.style.background = "rgba(248, 113, 113, 0.08)";
+        e.currentTarget.style.borderColor = "rgba(185, 28, 28, 0.4)";
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "var(--border-glass)";
         e.currentTarget.style.color = "var(--text-muted)";
-        e.currentTarget.style.background = "var(--glass-bg-light)";
+        e.currentTarget.style.borderColor = "var(--border)";
       }}
     >
-      <LogOut size={15} />
+      <LogOut size={14} strokeWidth={1.75} />
     </button>
   );
 }

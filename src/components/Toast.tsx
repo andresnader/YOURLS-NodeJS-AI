@@ -52,44 +52,45 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
   }, [onDismiss]);
 
   const icons = {
-    success: <CheckCircle size={18} style={{ color: "var(--color-success)" }} />,
-    error: <XCircle size={18} style={{ color: "var(--color-danger)" }} />,
-    warning: <AlertTriangle size={18} style={{ color: "var(--color-warning)" }} />,
-    info: <Info size={18} style={{ color: "#00F0FF" }} />,
+    success: <CheckCircle size={16} strokeWidth={1.75} style={{ color: "var(--color-success)" }} />,
+    error: <XCircle size={16} strokeWidth={1.75} style={{ color: "var(--color-danger)" }} />,
+    warning: <AlertTriangle size={16} strokeWidth={1.75} style={{ color: "var(--color-warning)" }} />,
+    info: <Info size={16} strokeWidth={1.75} style={{ color: "var(--color-primary)" }} />,
   };
 
   const accentColors = {
     success: "var(--color-success)",
     error: "var(--color-danger)",
     warning: "var(--color-warning)",
-    info: "#00F0FF",
+    info: "var(--color-primary)",
   };
 
   return (
     <div
-      className="pointer-events-auto animate-slide-up flex items-center gap-3 px-4 py-3 rounded-xl"
+      className="pointer-events-auto animate-slide-up flex items-center gap-3 px-4 py-3 border"
       style={{
-        background: "var(--glass-bg)",
-        backdropFilter: "blur(24px)",
-        border: "1px solid var(--border-glass)",
+        background: "var(--bg-surface)",
+        borderColor: "var(--border)",
         borderLeft: `3px solid ${accentColors[toast.type]}`,
-        boxShadow: "var(--shadow-deep)",
+        borderRadius: "var(--radius-md)",
+        boxShadow: "var(--shadow-pop)",
         minWidth: "300px",
         maxWidth: "440px",
       }}
     >
       {icons[toast.type]}
-      <span className="text-sm font-medium flex-1" style={{ color: "var(--text-primary)" }}>
+      <span className="text-[13px] flex-1" style={{ color: "var(--text-primary)" }}>
         {toast.message}
       </span>
       <button
         onClick={onDismiss}
-        className="p-1 rounded-md transition-colors shrink-0"
+        className="p-1 transition-colors shrink-0 cursor-pointer"
         style={{ color: "var(--text-muted)" }}
-        onMouseEnter={(e) => e.currentTarget.style.color = "var(--text-secondary)"}
-        onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}
+        onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-primary)")}
+        onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+        aria-label="Dismiss"
       >
-        <X size={14} />
+        <X size={13} strokeWidth={1.75} />
       </button>
     </div>
   );

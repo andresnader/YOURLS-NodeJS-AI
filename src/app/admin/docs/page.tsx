@@ -215,69 +215,113 @@ export default function DocsPage() {
   const lang = language as "en" | "es";
 
   return (
-    <div className="px-6 py-8 md:px-10 space-y-10 animate-fade-in relative z-10 transition-colors duration-300">
-      <header className="space-y-2">
-        <div className="flex items-center gap-3">
-          <BookOpen size={28} className="text-accent" />
-          <h1 className="text-2xl font-bold">{t("common.documentation")}</h1>
-        </div>
-        <p className="text-sm opacity-60">
-          {lang === "en" 
-            ? "Complete guide to using YOURLS Node effectively" 
-            : "Guía completa para usar YOURLS Node efectivamente"}
+    <div className="max-w-6xl mx-auto px-6 md:px-12 py-10 md:py-14 space-y-12 animate-fade-in">
+      <header className="space-y-3">
+        <p className="text-eyebrow">{t("common.documentation")}</p>
+        <h1 className="text-h1" style={{ color: "var(--text-primary)" }}>
+          User guide
+        </h1>
+        <p
+          className="max-w-prose text-[15px] leading-relaxed"
+          style={{ color: "var(--text-secondary)" }}
+        >
+          {lang === "en"
+            ? "Everything you need to know to get the most out of YOURLS Node."
+            : "Todo lo que necesitás saber para sacarle el máximo provecho a YOURLS Node."}
         </p>
       </header>
+
+      <hr className="rule" />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {sections.map((section) => {
           const content = section.content[lang];
           const Icon = section.icon;
-          
+
           return (
-            <section 
+            <section
               key={section.id}
-              className="glass p-6 rounded-3xl space-y-4 group hover:border-primary/30 transition-all duration-300"
-              style={{ borderColor: `${section.color}20` }}
+              className="p-7 space-y-5 border"
+              style={{
+                background: "var(--bg-surface)",
+                borderColor: "var(--border)",
+                borderRadius: "var(--radius-lg)",
+              }}
             >
-              <header className="flex items-start gap-4">
-                <div 
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
-                  style={{ background: `${section.color}15`, border: `1px solid ${section.color}30` }}
+              <header className="space-y-3">
+                <Icon
+                  size={20}
+                  strokeWidth={1.5}
+                  style={{ color: "var(--color-primary)" }}
+                />
+                <h2
+                  className="font-serif text-[22px] leading-tight"
+                  style={{ color: "var(--text-primary)" }}
                 >
-                  <Icon size={22} style={{ color: section.color }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-bold mb-1">{content.title}</h2>
-                  <p className="text-sm opacity-70 leading-relaxed">{content.text}</p>
-                </div>
+                  {content.title}
+                </h2>
+                <p
+                  className="text-[14px] leading-relaxed"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {content.text}
+                </p>
               </header>
 
               {content.steps && (
-                <ol className="space-y-2 ml-4">
+                <ol className="space-y-2.5">
                   {content.steps.map((step: string, i: number) => (
-                    <li key={i} className="flex items-start gap-3 text-sm">
-                      <span 
-                        className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5"
-                        style={{ background: section.color, color: "#000" }}
+                    <li
+                      key={i}
+                      className="flex items-start gap-3 text-[14px]"
+                    >
+                      <span
+                        className="font-mono text-[12px] tabular-nums shrink-0 mt-0.5"
+                        style={{ color: "var(--color-primary)" }}
                       >
-                        {i + 1}
+                        {String(i + 1).padStart(2, "0")}.
                       </span>
-                      <span className="opacity-80">{step}</span>
+                      <span style={{ color: "var(--text-secondary)" }}>
+                        {step}
+                      </span>
                     </li>
                   ))}
                 </ol>
               )}
 
               {content.actions && (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-1">
                   {content.actions.map((action: any, i: number) => {
                     const ActionIcon = action.icon;
                     return (
-                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
-                        <ActionIcon size={16} style={{ color: section.color }} />
+                      <div
+                        key={i}
+                        className="flex items-start gap-3 py-2"
+                        style={{
+                          borderTop:
+                            i > 0 ? "1px solid var(--border-soft)" : "none",
+                          paddingTop: i > 0 ? "0.75rem" : "0.5rem",
+                        }}
+                      >
+                        <ActionIcon
+                          size={15}
+                          strokeWidth={1.75}
+                          className="mt-0.5 shrink-0"
+                          style={{ color: "var(--text-muted)" }}
+                        />
                         <div>
-                          <p className="text-xs font-semibold">{action.label}</p>
-                          <p className="text-[10px] opacity-50">{action.desc}</p>
+                          <p
+                            className="text-[13px] font-medium"
+                            style={{ color: "var(--text-primary)" }}
+                          >
+                            {action.label}
+                          </p>
+                          <p
+                            className="text-[12px]"
+                            style={{ color: "var(--text-muted)" }}
+                          >
+                            {action.desc}
+                          </p>
                         </div>
                       </div>
                     );
@@ -288,9 +332,17 @@ export default function DocsPage() {
               {content.features && (
                 <ul className="space-y-2">
                   {content.features.map((feature: string, i: number) => (
-                    <li key={i} className="flex items-center gap-3 text-sm">
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: section.color }} />
-                      <span className="opacity-80">{feature}</span>
+                    <li
+                      key={i}
+                      className="flex items-start gap-2.5 text-[14px]"
+                    >
+                      <span
+                        className="w-1 h-1 rounded-full mt-2.5 shrink-0"
+                        style={{ background: "var(--color-primary)" }}
+                      />
+                      <span style={{ color: "var(--text-secondary)" }}>
+                        {feature}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -299,26 +351,69 @@ export default function DocsPage() {
               {content.metrics && (
                 <div className="grid grid-cols-2 gap-3">
                   {content.metrics.map((metric: any, i: number) => (
-                    <div key={i} className="p-3 rounded-xl bg-white/5">
-                      <p className="text-xs font-semibold" style={{ color: section.color }}>{metric.label}</p>
-                      <p className="text-[10px] opacity-50 mt-1">{metric.desc}</p>
+                    <div
+                      key={i}
+                      className="p-3 border"
+                      style={{
+                        background: "var(--bg-elevated)",
+                        borderColor: "var(--border-soft)",
+                        borderRadius: "var(--radius-sm)",
+                      }}
+                    >
+                      <p
+                        className="text-[12px] font-medium"
+                        style={{ color: "var(--text-primary)" }}
+                      >
+                        {metric.label}
+                      </p>
+                      <p
+                        className="text-[11px] mt-1"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        {metric.desc}
+                      </p>
                     </div>
                   ))}
                 </div>
               )}
 
               {content.tip && (
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ background: section.color }} />
-                  <p className="text-xs opacity-70">{content.tip}</p>
+                <div
+                  className="p-4 flex gap-3 border"
+                  style={{
+                    background: "var(--bg-elevated)",
+                    borderColor: "var(--border-soft)",
+                    borderRadius: "var(--radius-sm)",
+                  }}
+                >
+                  <span
+                    className="w-1 h-1 rounded-full mt-2 shrink-0"
+                    style={{ background: "var(--color-primary)" }}
+                  />
+                  <p
+                    className="text-[13px] leading-relaxed"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    {content.tip}
+                  </p>
                 </div>
               )}
 
               {content.example && (
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold opacity-60 uppercase tracking-wider">{content.example.title}</p>
-                  <pre className="p-4 rounded-xl bg-black/50 border border-white/10 text-xs overflow-x-auto">
-                    <code className="text-primary">{content.example.code}</code>
+                  <p className="text-eyebrow">{content.example.title}</p>
+                  <pre
+                    className="p-4 text-[12px] overflow-x-auto border"
+                    style={{
+                      background: "var(--bg-elevated)",
+                      borderColor: "var(--border-soft)",
+                      borderRadius: "var(--radius-sm)",
+                      fontFamily: "var(--font-mono)",
+                    }}
+                  >
+                    <code style={{ color: "var(--color-primary)" }}>
+                      {content.example.code}
+                    </code>
                   </pre>
                 </div>
               )}
