@@ -22,7 +22,19 @@
     "keyword": "Palabra clave",
     "url": "URL Destino",
     "date": "Fecha de Creación",
-    "actions": "Acciones"
+    "actions": "Acciones",
+    "paste_url": "Pega una URL larga para acortar",
+    "shorten_now": "Acortar",
+    "shortening": "Acortando...",
+    "advanced_options": "Opciones Avanzadas",
+    "hide_options": "Ocultar Opciones",
+    "custom_slug": "Slug Personalizado",
+    "custom_title": "Título Personalizado",
+    "auto_metadata": "Auto-detectar de la página",
+    "redirect_protocol": "Tipo de Redirección",
+    "redirect_permanent": "301 Permanente",
+    "redirect_temporary": "302 Temporal",
+    "password_lock": "Contraseña"
   },
   "settings": {
     "title": "Configuración del Sistema",

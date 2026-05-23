@@ -153,7 +153,7 @@ export default function ShortenForm() {
             </div>
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted pl-1">
-                Redirect Protocol
+                {t("admin.redirect_protocol")}
               </label>
               <div className="flex gap-2">
                 <button
@@ -161,20 +161,20 @@ export default function ShortenForm() {
                   onClick={() => setRedirectType(301)}
                   className={`flex-1 py-3 rounded-2xl text-[10px] font-bold tracking-widest transition-all border ${redirectType === 301 ? 'bg-primary/20 border-primary shadow-glow-sm text-primary' : 'bg-white/5 border-white/10 text-muted'}`}
                 >
-                  301 PERMANENT
+                  {t("admin.redirect_permanent")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setRedirectType(302)}
                   className={`flex-1 py-3 rounded-2xl text-[10px] font-bold tracking-widest transition-all border ${redirectType === 302 ? 'bg-primary/20 border-primary shadow-glow-sm text-primary' : 'bg-white/5 border-white/10 text-muted'}`}
                 >
-                  302 TEMPORARY
+                  {t("admin.redirect_temporary")}
                 </button>
               </div>
             </div>
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted pl-1">
-                Password Lock
+                {t("admin.password_lock")}
               </label>
               <input
                 type="password"

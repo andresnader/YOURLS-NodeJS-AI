@@ -22,7 +22,19 @@
     "keyword": "Keyword",
     "url": "Target URL",
     "date": "Created Date",
-    "actions": "Actions"
+    "actions": "Actions",
+    "paste_url": "Paste a long URL to shorten",
+    "shorten_now": "Shorten",
+    "shortening": "Shortening...",
+    "advanced_options": "Advanced Options",
+    "hide_options": "Hide Options",
+    "custom_slug": "Custom Slug",
+    "custom_title": "Custom Title",
+    "auto_metadata": "Auto-detect from page",
+    "redirect_protocol": "Redirect Protocol",
+    "redirect_permanent": "301 Permanent",
+    "redirect_temporary": "302 Temporary",
+    "password_lock": "Password Lock"
   },
   "settings": {
     "title": "System Configuration",
