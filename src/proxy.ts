@@ -39,6 +39,12 @@ const PUBLIC_API_ROUTES: Array<{ path: string; methods: string[] }> = [
   { path: '/api/docs', methods: ['GET'] },
 ];
 
+// Path prefixes that are public for GET only (consumed by <img>/<a> tags
+// from a browser, which cannot send an API key).
+const PUBLIC_API_PREFIXES_GET: string[] = [
+  '/api/qr/',
+];
+
 const API_KEY_ALLOWED_ROUTES = [
   '/api/shorten',
   '/api/stats',
@@ -59,7 +65,13 @@ function getIp(request: NextRequest): string {
 }
 
 function isPublicApi(pathname: string, method: string): boolean {
-  return PUBLIC_API_ROUTES.some(r => pathname === r.path && r.methods.includes(method));
+  if (PUBLIC_API_ROUTES.some(r => pathname === r.path && r.methods.includes(method))) {
+    return true;
+  }
+  if (method === 'GET' && PUBLIC_API_PREFIXES_GET.some(p => pathname.startsWith(p))) {
+    return true;
+  }
+  return false;
 }
 
 function isApiKeyRoute(pathname: string): boolean {
