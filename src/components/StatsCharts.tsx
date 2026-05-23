@@ -12,8 +12,8 @@ import {
   Legend,
   ArcElement,
   Filler,
-} from 'chart.js';
-import { Line, Bar, Doughnut } from 'react-chartjs-2';
+} from "chart.js";
+import { Line, Doughnut } from "react-chartjs-2";
 
 ChartJS.register(
   CategoryScale,
@@ -39,31 +39,66 @@ interface StatsData {
   countries: Record<string, number>;
 }
 
+/**
+ * Read theme tokens at render time so charts adapt to light/dark.
+ * Charts are canvas-only so they can't inherit CSS vars natively.
+ */
+function readToken(name: string, fallback: string): string {
+  if (typeof window === "undefined") return fallback;
+  return (
+    getComputedStyle(document.documentElement).getPropertyValue(name).trim() ||
+    fallback
+  );
+}
+
 export default function StatsCharts({ data }: { data: StatsData }) {
+  const primary = readToken("--color-primary", "#0E7490");
+  const textPrimary = readToken("--text-primary", "#1A2332");
+  const textMuted = readToken("--text-muted", "#6B7385");
+  const surface = readToken("--bg-surface", "#FFFFFF");
+  const border = readToken("--border", "rgba(26,35,50,0.14)");
+
+  /** Editorial palette — single hue with luminance steps, plus warm accent for emphasis */
+  const editorialPalette = [
+    "#0E7490", // teal-700
+    "#155E75", // teal-800
+    "#164E63", // teal-900
+    "#B45309", // amber-700
+    "#92400E", // amber-800
+    "#6B7385", // neutral ink
+  ];
+
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: false,
-      },
+      legend: { display: false },
       tooltip: {
-        backgroundColor: 'rgba(4, 6, 9, 0.9)',
-        titleColor: '#00F0FF',
-        borderColor: 'rgba(0, 240, 255, 0.2)',
+        backgroundColor: surface,
+        titleColor: textPrimary,
+        bodyColor: textPrimary,
+        borderColor: border,
         borderWidth: 1,
         padding: 12,
-        cornerRadius: 8,
+        cornerRadius: 6,
+        titleFont: { family: "Inter", weight: 600, size: 12 },
+        bodyFont: { family: "Inter", size: 12 },
       },
     },
     scales: {
       y: {
-        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-        ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { size: 10 } },
+        grid: { color: border, drawBorder: false },
+        ticks: {
+          color: textMuted,
+          font: { family: "Inter", size: 11 },
+        },
       },
       x: {
         grid: { display: false },
-        ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { size: 10 } },
+        ticks: {
+          color: textMuted,
+          font: { family: "Inter", size: 11 },
+        },
       },
     },
   };
@@ -73,86 +108,110 @@ export default function StatsCharts({ data }: { data: StatsData }) {
     datasets: [
       {
         fill: true,
-        label: 'Clicks',
+        label: "Clicks",
         data: Object.values(data.timeSeries),
-        borderColor: '#00F0FF',
-        backgroundColor: 'rgba(0, 240, 255, 0.1)',
-        tension: 0.4,
-        borderWidth: 2,
-        pointBackgroundColor: '#00F0FF',
-        pointRadius: 4,
+        borderColor: primary,
+        backgroundColor: `${primary}1A`, // ~10% alpha
+        tension: 0.35,
+        borderWidth: 1.5,
+        pointBackgroundColor: primary,
+        pointBorderColor: surface,
+        pointBorderWidth: 1.5,
+        pointRadius: 3,
+        pointHoverRadius: 5,
       },
     ],
   };
 
-  const donutConfig = (labels: string[], values: number[], colors: string[]) => ({
+  const donutConfig = (labels: string[], values: number[]) => ({
     labels,
     datasets: [
       {
         data: values,
-        backgroundColor: colors,
-        borderColor: 'rgba(255, 255, 255, 0.05)',
+        backgroundColor: editorialPalette,
+        borderColor: surface,
         borderWidth: 2,
       },
     ],
   });
 
-  const neonColors = ['#00F0FF', '#A855F7', '#FBBF24', '#F87171', '#34D399', '#60A5FA'];
+  const donutOpts = {
+    maintainAspectRatio: false,
+    cutout: "62%",
+    plugins: {
+      legend: {
+        display: true,
+        position: "bottom" as const,
+        labels: {
+          color: textMuted,
+          font: { family: "Inter", size: 11 },
+          usePointStyle: true,
+          boxWidth: 6,
+          boxHeight: 6,
+          padding: 12,
+        },
+      },
+      tooltip: {
+        backgroundColor: surface,
+        titleColor: textPrimary,
+        bodyColor: textPrimary,
+        borderColor: border,
+        borderWidth: 1,
+        cornerRadius: 6,
+        bodyFont: { family: "Inter", size: 12 },
+      },
+    },
+  };
+
+  const cardStyle = {
+    background: surface,
+    border: `1px solid ${border}`,
+    borderRadius: "var(--radius-lg)",
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {/* Time Series Chart */}
-      <div className="md:col-span-2 lg:col-span-3 glass p-6 rounded-2xl">
-        <h3 className="text-sm font-semibold mb-6 flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#00F0FF' }}></span>
-          Click Velocity (Last 7 Days)
-        </h3>
+      <article
+        className="md:col-span-2 lg:col-span-3 p-7"
+        style={cardStyle}
+      >
+        <header className="mb-6">
+          <p className="text-eyebrow">Last 7 days</p>
+          <h3
+            className="font-serif text-[20px] mt-1"
+            style={{ color: textPrimary }}
+          >
+            Click velocity
+          </h3>
+        </header>
         <div className="h-64">
           <Line options={chartOptions} data={lineData} />
         </div>
-      </div>
+      </article>
 
-      {/* Browsers */}
-      <div className="glass p-6 rounded-2xl">
-        <h3 className="text-sm font-semibold mb-6 flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#A855F7' }}></span>
-          Browsers
-        </h3>
-        <div className="h-48 relative">
-          <Doughnut 
-            data={donutConfig(Object.keys(data.browsers), Object.values(data.browsers), neonColors)}
-            options={{ maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: 'rgba(255, 255, 255, 0.5)', font: { size: 10 }, usePointStyle: true } } } }}
-          />
-        </div>
-      </div>
-
-      {/* OS */}
-      <div className="glass p-6 rounded-2xl">
-        <h3 className="text-sm font-semibold mb-6 flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#FBBF24' }}></span>
-          Operating Systems
-        </h3>
-        <div className="h-48 relative">
-          <Doughnut 
-            data={donutConfig(Object.keys(data.os), Object.values(data.os), neonColors.slice().reverse())}
-            options={{ maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: 'rgba(255, 255, 255, 0.5)', font: { size: 10 }, usePointStyle: true } } } }}
-          />
-        </div>
-      </div>
-
-      {/* Devices */}
-      <div className="glass p-6 rounded-2xl">
-        <h3 className="text-sm font-semibold mb-6 flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#F87171' }}></span>
-          Devices
-        </h3>
-        <div className="h-48 relative">
-          <Doughnut 
-            data={donutConfig(Object.keys(data.devices), Object.values(data.devices), ['#00F0FF', '#A855F7', '#FBBF24'])}
-            options={{ maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: 'rgba(255, 255, 255, 0.5)', font: { size: 10 }, usePointStyle: true } } } }}
-          />
-        </div>
-      </div>
+      {[
+        { title: "Browsers", source: data.browsers },
+        { title: "Operating systems", source: data.os },
+        { title: "Devices", source: data.devices },
+      ].map((chart) => (
+        <article key={chart.title} className="p-7" style={cardStyle}>
+          <header className="mb-6">
+            <p className="text-eyebrow">Breakdown</p>
+            <h3
+              className="font-serif text-[20px] mt-1"
+              style={{ color: textPrimary }}
+            >
+              {chart.title}
+            </h3>
+          </header>
+          <div className="h-52 relative">
+            <Doughnut
+              data={donutConfig(Object.keys(chart.source), Object.values(chart.source))}
+              options={donutOpts}
+            />
+          </div>
+        </article>
+      ))}
     </div>
   );
 }

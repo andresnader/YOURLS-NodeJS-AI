@@ -1,51 +1,74 @@
-import { Suspense } from 'react';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft, ExternalLink, Globe, Calendar, MousePointer2 } from 'lucide-react';
-import StatsCharts from '@/components/StatsCharts';
-import { getKeywordStats } from '@/lib/stats';
+import { Suspense } from "react";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, ExternalLink, Globe, Calendar, MousePointer2 } from "lucide-react";
+import StatsCharts from "@/components/StatsCharts";
+import { getKeywordStats } from "@/lib/stats";
 
-export default async function KeywordStatsPage({ params }: { params: Promise<{ keyword: string }> }) {
+export default async function KeywordStatsPage({
+  params,
+}: {
+  params: Promise<{ keyword: string }>;
+}) {
   const { keyword } = await params;
-  
-  return (
-    <div className="min-h-screen p-6 md:p-12 animate-fade-in">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <Link 
-              href="/admin" 
-              className="inline-flex items-center gap-2 text-xs font-semibold mb-3 hover:translate-x-[-4px] transition-transform"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              <ArrowLeft size={14} />
-              Return to Control Center
-            </Link>
-            <h1 className="text-3xl font-black tracking-tighter">
-              Analytical <span style={{ color: '#00F0FF' }}>Intelligence</span>
-            </h1>
-            <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
-              Detailed insights for <span className="font-mono text-[#00F0FF]">/{keyword}</span>
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <a 
-              href={`/${keyword}`}
-              target="_blank"
-              className="btn-glass px-4 py-2 rounded-xl flex items-center gap-2 text-sm"
-            >
-              <ExternalLink size={16} />
-              Visit Link
-            </a>
-          </div>
-        </div>
 
-        <Suspense fallback={<div className="glass p-12 text-center">Initializing deep scan...</div>}>
-          <StatsContent keyword={keyword} />
-        </Suspense>
-      </div>
+  return (
+    <div className="max-w-6xl mx-auto px-6 md:px-12 py-10 md:py-14 space-y-12 animate-fade-in">
+      <header className="space-y-4">
+        <Link
+          href="/admin"
+          className="inline-flex items-center gap-1.5 text-[13px] transition-colors"
+          style={{ color: "var(--text-muted)" }}
+        >
+          <ArrowLeft size={13} strokeWidth={1.75} />
+          Back to dashboard
+        </Link>
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div className="space-y-2">
+            <p className="text-eyebrow">Link analytics</p>
+            <h1
+              className="text-h1"
+              style={{ color: "var(--text-primary)" }}
+            >
+              <span
+                className="font-mono text-[28px] md:text-[32px]"
+                style={{ color: "var(--color-primary)" }}
+              >
+                /{keyword}
+              </span>
+            </h1>
+          </div>
+          <a
+            href={`/${keyword}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-ghost inline-flex items-center gap-2 text-[13px]"
+          >
+            <ExternalLink size={14} strokeWidth={1.75} />
+            Visit link
+          </a>
+        </div>
+      </header>
+
+      <hr className="rule" />
+
+      <Suspense
+        fallback={
+          <div
+            className="p-12 text-center border"
+            style={{
+              background: "var(--bg-surface)",
+              borderColor: "var(--border)",
+              borderRadius: "var(--radius-lg)",
+              color: "var(--text-muted)",
+            }}
+          >
+            Loading analytics…
+          </div>
+        }
+      >
+        <StatsContent keyword={keyword} />
+      </Suspense>
     </div>
   );
 }
@@ -56,56 +79,91 @@ async function StatsContent({ keyword }: { keyword: string }) {
     if (!data) notFound();
 
     return (
-      <div className="space-y-8">
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard 
-            label="Total Accumulation" 
-            value={data.totalClicks.toLocaleString()} 
-            icon={<MousePointer2 size={20} />}
-            color="#00F0FF"
-          />
-          <StatCard 
-            label="Unique Domains" 
-            value={Object.keys(data.countries).length.toString()} 
-            icon={<Globe size={20} />} 
-            color="#A855F7"
-          />
-          <StatCard 
-            label="Peak Velocity" 
-            value={Math.max(...Object.values(data.timeSeries)).toString()} 
-            icon={<Calendar size={20} />} 
-            color="#FBBF24"
-          />
-          <div className="glass p-5 rounded-2xl flex flex-col justify-center">
-             <p className="text-[10px] uppercase tracking-[0.2em] mb-1" style={{ color: 'var(--text-muted)' }}>Destination</p>
-             <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-secondary)' }}>{data.longUrl}</p>
+      <div className="space-y-12">
+        {/* Summary KPIs */}
+        <section>
+          <h2 className="text-eyebrow mb-5">Overview</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                label: "Total clicks",
+                value: data.totalClicks.toLocaleString(),
+                icon: MousePointer2,
+              },
+              {
+                label: "Countries",
+                value: Object.keys(data.countries).length.toString(),
+                icon: Globe,
+              },
+              {
+                label: "Peak velocity",
+                value: Math.max(...Object.values(data.timeSeries)).toString(),
+                icon: Calendar,
+              },
+              {
+                label: "Destination",
+                value: data.longUrl,
+                icon: ExternalLink,
+                mono: true,
+              },
+            ].map((stat, i) => (
+              <div
+                key={stat.label}
+                className="p-5 md:p-6 flex flex-col gap-3"
+                style={{
+                  background: "var(--bg-surface)",
+                  borderLeft: i === 0 ? "1px solid var(--border)" : "none",
+                  borderRight: "1px solid var(--border)",
+                  borderTop: "1px solid var(--border)",
+                  borderBottom: "1px solid var(--border)",
+                  marginLeft: i === 0 ? 0 : "-1px",
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-eyebrow">{stat.label}</p>
+                  <stat.icon
+                    size={14}
+                    strokeWidth={1.75}
+                    style={{ color: "var(--text-muted)" }}
+                  />
+                </div>
+                <p
+                  className={
+                    stat.mono
+                      ? "font-mono text-[13px] truncate"
+                      : "font-serif text-[28px] leading-none tracking-tight"
+                  }
+                  style={{ color: "var(--text-primary)" }}
+                  title={stat.mono ? stat.value : undefined}
+                >
+                  {stat.value}
+                </p>
+              </div>
+            ))}
           </div>
-        </div>
+        </section>
 
-        {/* Charts Section */}
-        <StatsCharts data={data} />
+        {/* Charts */}
+        <section>
+          <h2 className="text-eyebrow mb-5">Trends</h2>
+          <StatsCharts data={data} />
+        </section>
       </div>
     );
   } catch (error) {
-    console.error('[stats page]', error);
+    console.error("[stats page]", error);
     return (
-      <div className="glass p-12 text-center text-red-400">
+      <div
+        className="p-12 text-center border"
+        style={{
+          background: "var(--bg-surface)",
+          borderColor: "var(--border)",
+          borderRadius: "var(--radius-lg)",
+          color: "var(--color-danger)",
+        }}
+      >
         Could not load stats for this keyword. Try again in a moment.
       </div>
     );
   }
-}
-
-function StatCard({ label, value, icon, color }: { label: string, value: string, icon: any, color: string }) {
-  return (
-    <div className="glass p-5 rounded-2xl relative overflow-hidden group">
-      <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform" style={{ color }}>
-        {icon}
-      </div>
-      <p className="text-[10px] uppercase tracking-[0.2em] font-bold mb-1" style={{ color: 'var(--text-muted)' }}>{label}</p>
-      <div className="text-2xl font-black">{value}</div>
-      <div className="absolute bottom-0 left-0 w-full h-0.5" style={{ background: `linear-gradient(to right, ${color}, transparent)` }}></div>
-    </div>
-  );
 }
