@@ -74,6 +74,15 @@
    LIGHT MODE
    ──────────────────────────────────────────────────────────── */
 .light {
+  /* Brand — drop neon cyan to a deeper teal so it stops "shouting" on white.
+     These override the @theme defaults at runtime, so all Tailwind utilities
+     (bg-primary, text-primary, etc.) and inline var() consumers shift together. */
+  --color-primary: #0E7490;       /* cyan-700 — readable on white, paired well with slate */
+  --color-primary-dim: #155E75;   /* cyan-800 */
+  --color-primary-deep: #164E63;  /* cyan-900 */
+  --color-accent: #7C3AED;        /* violet-600 — deeper purple instead of fluo */
+  --color-accent-dim: #5B21B6;    /* violet-800 */
+
   /* Surfaces */
   --bg-void: #F1F5F9;
   --bg-deep: #E2E8F0;
@@ -88,7 +97,7 @@
 
   /* Borders — visible but subtle */
   --border-glass: rgba(15, 23, 42, 0.12);
-  --border-glow: rgba(8, 145, 178, 0.35);
+  --border-glow: rgba(14, 116, 144, 0.30);
 
   /* Glass fills — opaque enough to be readable */
   --glass-bg: rgba(255, 255, 255, 0.85);
@@ -98,24 +107,24 @@
   /* Inputs */
   --input-bg: rgba(15, 23, 42, 0.03);
   --input-bg-focus: rgba(15, 23, 42, 0.05);
-  --input-border-focus: rgba(8, 145, 178, 0.5);
-  --input-ring: rgba(8, 145, 178, 0.12);
+  --input-border-focus: rgba(14, 116, 144, 0.45);
+  --input-ring: rgba(14, 116, 144, 0.10);
 
-  /* Ambient + shadows — softer on white */
-  --shadow-ambient: 0 0 60px -20px rgba(8, 145, 178, 0.12);
-  --shadow-glow: 0 0 25px -5px rgba(8, 145, 178, 0.18);
-  --shadow-glow-sm: 0 0 12px -3px rgba(8, 145, 178, 0.12);
+  /* Ambient + shadows — softer on white, no glow halos */
+  --shadow-ambient: 0 0 60px -20px rgba(14, 116, 144, 0.10);
+  --shadow-glow: 0 0 18px -6px rgba(14, 116, 144, 0.14);
+  --shadow-glow-sm: 0 0 8px -3px rgba(14, 116, 144, 0.10);
   --shadow-card: 0 4px 18px rgba(15, 23, 42, 0.08);
   --shadow-deep: 0 16px 40px rgba(15, 23, 42, 0.10);
-  --ambient-orb: rgba(8, 145, 178, 0.08);
-  --ambient-orb-opacity: 0.5;
+  --ambient-orb: rgba(14, 116, 144, 0.06);
+  --ambient-orb-opacity: 0.25;
 
   /* Scrollbar — dark thumb on light track */
   --scrollbar-thumb: rgba(15, 23, 42, 0.18);
   --scrollbar-thumb-hover: rgba(15, 23, 42, 0.32);
 
-  /* Selection — high contrast on light */
-  --selection-bg: rgba(0, 240, 255, 0.35);
+  /* Selection — teal-on-slate, no fluo */
+  --selection-bg: rgba(14, 116, 144, 0.20);
   --selection-fg: #0F172A;
 }
 
@@ -224,7 +233,9 @@ body::before {
   box-shadow: var(--shadow-glow-sm);
   &:hover {
     transform: translateY(-1px) scale(1.02);
-    box-shadow: var(--shadow-glow), 0 0 60px -10px rgba(0, 240, 255, 0.25);
+    box-shadow:
+      var(--shadow-glow),
+      0 0 60px -10px color-mix(in oklab, var(--color-primary) 25%, transparent);
   }
   &:active {
     transform: translateY(0) scale(0.98);
