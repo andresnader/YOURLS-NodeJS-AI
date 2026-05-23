@@ -40,19 +40,29 @@ export async function GET(request: Request, context: { params: Promise<{ keyword
     });
 
     // 2. Fetch Geolocation (Free service)
-    const fetchGeo = async () => {
+    type Geo = { countryCode: string | null; region: string | null; city: string | null };
+    const fetchGeo = async (): Promise<Geo> => {
       try {
-        const geoRes = await fetch(`http://ip-api.com/json/${ip}?fields=status,countryCode`);
+        const geoRes = await fetch(
+          `http://ip-api.com/json/${ip}?fields=status,countryCode,regionName,city`,
+        );
         const geoData = await geoRes.json();
-        return geoData.status === 'success' ? geoData.countryCode : null;
+        if (geoData.status !== 'success') {
+          return { countryCode: null, region: null, city: null };
+        }
+        return {
+          countryCode: geoData.countryCode || null,
+          region: geoData.regionName || null,
+          city: geoData.city || null,
+        };
       } catch {
-        return null;
+        return { countryCode: null, region: null, city: null };
       }
     };
 
     // 3. Create Log entry
     const logTask = async () => {
-      const countryCode = await fetchGeo();
+      const geo = await fetchGeo();
       await prisma.log.create({
         data: {
           shorturl: keyword,
@@ -62,8 +72,10 @@ export async function GET(request: Request, context: { params: Promise<{ keyword
           browser,
           os,
           device,
-          countryCode
-        }
+          countryCode: geo.countryCode,
+          region: geo.region,
+          city: geo.city,
+        },
       });
     };
 

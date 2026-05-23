@@ -32,10 +32,14 @@ model Log {
   userAgent   String?
   ipAddress   String?
   countryCode String?
+  region      String?
+  city        String?
   browser     String?
   device      String?
   os          String?
   urlRel      Url      @relation(fields: [shorturl], references: [keyword], onDelete: Cascade)
+
+  @@index([shorturl, clickedAt])
 }
 
 model Option {

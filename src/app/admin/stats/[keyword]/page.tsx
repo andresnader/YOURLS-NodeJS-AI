@@ -1,20 +1,40 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, Globe, Calendar, MousePointer2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ExternalLink,
+  Globe,
+  Calendar,
+  MousePointer2,
+  Download,
+} from "lucide-react";
 import StatsCharts from "@/components/StatsCharts";
-import { getKeywordStats } from "@/lib/stats";
+import GeoChart from "@/components/stats/GeoChart";
+import ReferrerList from "@/components/stats/ReferrerList";
+import RecentClicks from "@/components/stats/RecentClicks";
+import ClickHeatmap from "@/components/stats/ClickHeatmap";
+import RangeSelector from "@/components/stats/RangeSelector";
+import { getKeywordStats, type TimeRange } from "@/lib/stats";
+
+const VALID_RANGES: TimeRange[] = ["24h", "7d", "30d", "90d", "all"];
 
 export default async function KeywordStatsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ keyword: string }>;
+  searchParams: Promise<{ range?: string }>;
 }) {
   const { keyword } = await params;
+  const { range: rangeRaw } = await searchParams;
+  const range: TimeRange = (VALID_RANGES as string[]).includes(rangeRaw ?? "")
+    ? (rangeRaw as TimeRange)
+    : "7d";
 
   return (
     <div className="max-w-6xl mx-auto px-6 md:px-12 py-10 md:py-14 space-y-12 animate-fade-in">
-      <header className="space-y-4">
+      <header className="space-y-5">
         <Link
           href="/admin"
           className="inline-flex items-center gap-1.5 text-[13px] transition-colors"
@@ -38,15 +58,29 @@ export default async function KeywordStatsPage({
               </span>
             </h1>
           </div>
-          <a
-            href={`/${keyword}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-ghost inline-flex items-center gap-2 text-[13px]"
-          >
-            <ExternalLink size={14} strokeWidth={1.75} />
-            Visit link
-          </a>
+          <div className="flex items-center gap-2">
+            <a
+              href={`/api/stats/${keyword}/export?range=${range}`}
+              className="btn-ghost inline-flex items-center gap-2 text-[13px]"
+              download
+            >
+              <Download size={14} strokeWidth={1.75} />
+              Export CSV
+            </a>
+            <a
+              href={`/${keyword}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-ghost inline-flex items-center gap-2 text-[13px]"
+            >
+              <ExternalLink size={14} strokeWidth={1.75} />
+              Visit link
+            </a>
+          </div>
+        </div>
+        <div className="flex items-center justify-between gap-4 pt-2">
+          <span className="text-eyebrow">Range</span>
+          <RangeSelector active={range} />
         </div>
       </header>
 
@@ -67,20 +101,28 @@ export default async function KeywordStatsPage({
           </div>
         }
       >
-        <StatsContent keyword={keyword} />
+        <StatsContent keyword={keyword} range={range} />
       </Suspense>
     </div>
   );
 }
 
-async function StatsContent({ keyword }: { keyword: string }) {
+async function StatsContent({
+  keyword,
+  range,
+}: {
+  keyword: string;
+  range: TimeRange;
+}) {
   try {
-    const data = await getKeywordStats(keyword);
+    const data = await getKeywordStats(keyword, range);
     if (!data) notFound();
+
+    const peakInRange = Math.max(0, ...Object.values(data.timeSeries));
 
     return (
       <div className="space-y-12">
-        {/* Summary KPIs */}
+        {/* Overview KPIs */}
         <section>
           <h2 className="text-eyebrow mb-5">Overview</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4">
@@ -91,20 +133,19 @@ async function StatsContent({ keyword }: { keyword: string }) {
                 icon: MousePointer2,
               },
               {
+                label: range === "all" ? "All-time clicks" : `Clicks in range`,
+                value: data.rangeClicks.toLocaleString(),
+                icon: Calendar,
+              },
+              {
                 label: "Countries",
                 value: Object.keys(data.countries).length.toString(),
                 icon: Globe,
               },
               {
-                label: "Peak velocity",
-                value: Math.max(...Object.values(data.timeSeries)).toString(),
+                label: range === "24h" ? "Peak hour" : "Peak day",
+                value: peakInRange.toString(),
                 icon: Calendar,
-              },
-              {
-                label: "Destination",
-                value: data.longUrl,
-                icon: ExternalLink,
-                mono: true,
               },
             ].map((stat, i) => (
               <div
@@ -128,13 +169,8 @@ async function StatsContent({ keyword }: { keyword: string }) {
                   />
                 </div>
                 <p
-                  className={
-                    stat.mono
-                      ? "font-mono text-[13px] truncate"
-                      : "font-serif text-[28px] leading-none tracking-tight"
-                  }
+                  className="font-serif text-[28px] leading-none tracking-tight"
                   style={{ color: "var(--text-primary)" }}
-                  title={stat.mono ? stat.value : undefined}
                 >
                   {stat.value}
                 </p>
@@ -143,10 +179,90 @@ async function StatsContent({ keyword }: { keyword: string }) {
           </div>
         </section>
 
-        {/* Charts */}
+        {/* Destination */}
+        <section>
+          <h2 className="text-eyebrow mb-3">Destination</h2>
+          <a
+            href={data.longUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-[14px] hover:underline truncate"
+            style={{ color: "var(--text-primary)" }}
+          >
+            {data.longUrl}
+            <ExternalLink size={12} strokeWidth={1.75} />
+          </a>
+        </section>
+
+        {/* Trend + Heatmap */}
         <section>
           <h2 className="text-eyebrow mb-5">Trends</h2>
           <StatsCharts data={data} />
+        </section>
+
+        {/* Heatmap (only useful with enough data) */}
+        <section>
+          <h2 className="text-eyebrow mb-5">Activity heatmap</h2>
+          <div
+            className="p-6 border"
+            style={{
+              background: "var(--bg-surface)",
+              borderColor: "var(--border)",
+              borderRadius: "var(--radius-lg)",
+            }}
+          >
+            <div className="mb-4">
+              <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>
+                Day of week vs hour (UTC). Darker = more clicks.
+              </p>
+            </div>
+            <ClickHeatmap data={data.hourlyHeatmap} />
+          </div>
+        </section>
+
+        {/* Geo */}
+        <section>
+          <h2 className="text-eyebrow mb-5">Geography</h2>
+          <div
+            className="p-7 border"
+            style={{
+              background: "var(--bg-surface)",
+              borderColor: "var(--border)",
+              borderRadius: "var(--radius-lg)",
+            }}
+          >
+            <GeoChart countries={data.countries} cities={data.cities} />
+          </div>
+        </section>
+
+        {/* Referrers */}
+        <section>
+          <h2 className="text-eyebrow mb-5">Referrers</h2>
+          <div
+            className="p-7 border"
+            style={{
+              background: "var(--bg-surface)",
+              borderColor: "var(--border)",
+              borderRadius: "var(--radius-lg)",
+            }}
+          >
+            <ReferrerList referrers={data.referrers} />
+          </div>
+        </section>
+
+        {/* Recent */}
+        <section>
+          <h2 className="text-eyebrow mb-5">Recent clicks</h2>
+          <div
+            className="border"
+            style={{
+              background: "var(--bg-surface)",
+              borderColor: "var(--border)",
+              borderRadius: "var(--radius-lg)",
+            }}
+          >
+            <RecentClicks rows={data.recentClicks} />
+          </div>
         </section>
       </div>
     );

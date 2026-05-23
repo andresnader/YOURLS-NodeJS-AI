@@ -32,6 +32,7 @@ interface StatsData {
   keyword: string;
   longUrl: string;
   totalClicks: number;
+  range?: string;
   timeSeries: Record<string, number>;
   browsers: Record<string, number>;
   os: Record<string, number>;
@@ -103,8 +104,20 @@ export default function StatsCharts({ data }: { data: StatsData }) {
     },
   };
 
+  const isHourly = data.range === "24h";
+  const labels = Object.keys(data.timeSeries).map((k) => {
+    if (isHourly) {
+      // "YYYY-MM-DDTHH" → "HH:00"
+      const hh = k.slice(11, 13);
+      return `${hh}:00`;
+    }
+    // "YYYY-MM-DD" → "MMM D"
+    const [, mm, dd] = k.split("-");
+    return `${mm}/${dd}`;
+  });
+
   const lineData = {
-    labels: Object.keys(data.timeSeries),
+    labels,
     datasets: [
       {
         fill: true,
@@ -117,7 +130,7 @@ export default function StatsCharts({ data }: { data: StatsData }) {
         pointBackgroundColor: primary,
         pointBorderColor: surface,
         pointBorderWidth: 1.5,
-        pointRadius: 3,
+        pointRadius: isHourly ? 2 : 3,
         pointHoverRadius: 5,
       },
     ],
@@ -176,12 +189,12 @@ export default function StatsCharts({ data }: { data: StatsData }) {
         style={cardStyle}
       >
         <header className="mb-6">
-          <p className="text-eyebrow">Last 7 days</p>
+          <p className="text-eyebrow">{isHourly ? "Last 24 hours" : "Click velocity"}</p>
           <h3
             className="font-serif text-[20px] mt-1"
             style={{ color: textPrimary }}
           >
-            Click velocity
+            {isHourly ? "Hourly clicks" : "Daily clicks"}
           </h3>
         </header>
         <div className="h-64">
