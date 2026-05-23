@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import ShortenForm from "@/components/ShortenForm";
 import StatsBar from "@/components/StatsBar";
 import AdminLinkManager from "@/components/AdminLinkManager";
@@ -12,50 +12,73 @@ export default function AdminPage() {
   const { t } = useTranslation();
 
   return (
-    <div className="px-6 py-8 md:px-10 space-y-8 animate-fade-in relative z-10 transition-colors duration-300">
-        {/* Stats */}
+    <div className="max-w-6xl mx-auto px-6 md:px-12 py-10 md:py-14 space-y-14 animate-fade-in">
+      {/* Editorial masthead */}
+      <header className="space-y-3">
+        <p className="text-eyebrow">{t("admin.title")}</p>
+        <h1 className="text-h1" style={{ color: "var(--text-primary)" }}>
+          {t("admin.new_link")}
+        </h1>
+        <p
+          className="max-w-prose text-[15px] leading-relaxed"
+          style={{ color: "var(--text-secondary)" }}
+        >
+          {t("admin.all_links")}
+        </p>
+      </header>
+
+      <hr className="rule" />
+
+      {/* Stats */}
+      <section>
+        <div className="flex items-baseline justify-between mb-5">
+          <h2 className="text-eyebrow">{t("common.stats")}</h2>
+        </div>
         <StatsBar />
+      </section>
 
-        {/* Shorten Form */}
-        <section>
-          <h2
-            className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-3 text-muted"
-          >
-            {t("admin.new_link")}
-          </h2>
-          <ShortenForm />
-        </section>
+      {/* Shorten form */}
+      <section>
+        <div className="flex items-baseline justify-between mb-5">
+          <h2 className="text-eyebrow">{t("admin.new_link")}</h2>
+        </div>
+        <ShortenForm />
+      </section>
 
-        {/* Links */}
-        <section>
-          <h2
-            className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-4 text-muted"
-          >
-            {t("admin.all_links")}
-          </h2>
-          <Suspense
-            fallback={
-              <div className="glass rounded-2xl p-12 text-center">
-                <Loader2 className="animate-spin h-8 w-8 text-primary mx-auto" />
-              </div>
-            }
-          >
-            <AdminLinkManager />
-          </Suspense>
-        </section>
+      {/* Links table */}
+      <section>
+        <div className="flex items-baseline justify-between mb-5">
+          <h2 className="text-eyebrow">{t("admin.all_links")}</h2>
+        </div>
+        <Suspense
+          fallback={
+            <div
+              className="rounded-lg p-12 text-center border"
+              style={{
+                background: "var(--bg-surface)",
+                borderColor: "var(--border)",
+              }}
+            >
+              <Loader2
+                className="animate-spin h-6 w-6 mx-auto"
+                style={{ color: "var(--color-primary)" }}
+              />
+            </div>
+          }
+        >
+          <AdminLinkManager />
+        </Suspense>
+      </section>
 
-        {/* Tools */}
-        <section>
-          <h2
-            className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-3 text-muted"
-          >
-            Tools
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Bookmarklet />
-          </div>
-        </section>
-      </div>
+      {/* Tools */}
+      <section>
+        <div className="flex items-baseline justify-between mb-5">
+          <h2 className="text-eyebrow">Tools</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Bookmarklet />
+        </div>
+      </section>
+    </div>
   );
 }
-

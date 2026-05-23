@@ -40,64 +40,39 @@ export default function StatsBar() {
   }, []);
 
   const items = [
-    {
-      label: t("stats.links"),
-      value: stats?.totalLinks ?? "—",
-      icon: Link2,
-      bg: "bg-primary/10",
-      iconColor: "text-primary",
-      borderGlow: "border-primary/20",
-    },
-    {
-      label: t("stats.clicks"),
-      value: stats?.totalClicks ?? "—",
-      icon: MousePointerClick,
-      bg: "bg-accent/10",
-      iconColor: "text-accent",
-      borderGlow: "border-accent/20",
-    },
-    {
-      label: t("stats.links_today"),
-      value: stats?.linksToday ?? "—",
-      icon: Zap,
-      bg: "bg-success/10",
-      iconColor: "text-success",
-      borderGlow: "border-success/20",
-    },
-    {
-      label: t("stats.clicks_today"),
-      value: stats?.clicksToday ?? "—",
-      icon: TrendingUp,
-      bg: "bg-amber-400/10",
-      iconColor: "text-amber-400",
-      borderGlow: "border-amber-400/20",
-    },
+    { label: t("stats.links"),         value: stats?.totalLinks ?? "—",   icon: Link2 },
+    { label: t("stats.clicks"),        value: stats?.totalClicks ?? "—",  icon: MousePointerClick },
+    { label: t("stats.links_today"),   value: stats?.linksToday ?? "—",   icon: Zap },
+    { label: t("stats.clicks_today"),  value: stats?.clicksToday ?? "—",  icon: TrendingUp },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full animate-fade-in transition-colors duration-300">
+    <div className="grid grid-cols-2 lg:grid-cols-4 w-full animate-fade-in">
       {items.map((item, i) => (
         <div
           key={item.label}
-          className={`glass glass-hover rounded-2xl p-5 flex items-center gap-4 transition-all duration-300 ${item.borderGlow} border`}
+          className="p-5 md:p-6 flex flex-col gap-3"
           style={{
-            animationDelay: `${i * 80}ms`,
+            borderLeft: i === 0 ? "1px solid var(--border)" : "none",
+            borderRight: "1px solid var(--border)",
+            borderTop: "1px solid var(--border)",
+            borderBottom: "1px solid var(--border)",
+            marginLeft: i === 0 ? 0 : "-1px",
+            background: "var(--bg-surface)",
+            animationDelay: `${i * 60}ms`,
             animationFillMode: "backwards",
           }}
         >
-          <div
-            className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${item.bg}`}
+          <div className="flex items-center justify-between">
+            <p className="text-eyebrow">{item.label}</p>
+            <item.icon size={15} strokeWidth={1.75} style={{ color: "var(--text-muted)" }} />
+          </div>
+          <p
+            className="font-serif text-[32px] leading-none tracking-tight"
+            style={{ color: "var(--text-primary)" }}
           >
-            <item.icon size={20} className={item.iconColor} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-2xl font-bold text-primary truncate">
-              {typeof item.value === "number" ? item.value.toLocaleString() : item.value}
-            </p>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted truncate">
-              {item.label}
-            </p>
-          </div>
+            {typeof item.value === "number" ? item.value.toLocaleString() : item.value}
+          </p>
         </div>
       ))}
     </div>

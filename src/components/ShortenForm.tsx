@@ -74,61 +74,71 @@ export default function ShortenForm() {
   return (
     <div className="w-full animate-fade-in">
       <form onSubmit={handleSubmit} className="w-full">
-        {/* Main input — glass pill */}
-        <div
-          className="flex items-center gap-2 p-2 rounded-2xl md:rounded-full transition-all glass shadow-glow-sm"
-        >
-          <div className="pl-4 text-muted">
-            <Link2 size={20} />
+        {/* Main input row — editorial */}
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3">
+          <div
+            className="flex items-center gap-3 px-4 rounded-md border transition-colors"
+            style={{
+              background: "var(--input-bg)",
+              borderColor: "var(--input-border)",
+            }}
+          >
+            <Link2 size={18} style={{ color: "var(--text-muted)" }} />
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              required
+              placeholder={t("admin.paste_url")}
+              className="flex-1 bg-transparent border-none outline-none py-3 text-[15px]"
+              style={{ color: "var(--text-primary)" }}
+            />
           </div>
-          <input
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            required
-            placeholder={t("admin.paste_url")}
-            className="flex-1 bg-transparent border-none outline-none px-2 py-3 text-sm text-primary"
-          />
           <button
             type="submit"
             disabled={loading}
-            className="btn-cyber rounded-2xl md:rounded-full px-7 py-3 text-sm whitespace-nowrap min-w-[140px]"
+            className="btn-primary px-6 py-3 text-[14px] whitespace-nowrap min-w-[160px]"
           >
             {loading ? (
-              <span className="flex items-center gap-2">
+              <>
                 <Loader2 className="animate-spin h-4 w-4" />
-                {t("admin.shortening")}
-              </span>
+                <span>{t("admin.shortening")}</span>
+              </>
             ) : (
-              <span className="flex items-center gap-1.5">
-                <Zap size={15} />
-                {t("admin.shorten_now")}
-              </span>
+              <span>{t("admin.shorten_now")}</span>
             )}
           </button>
         </div>
 
         {/* Advanced toggle */}
-        <div className="mt-3 flex justify-center">
+        <div className="mt-4">
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="text-[11px] font-bold uppercase tracking-widest px-6 py-2 rounded-full transition-all text-muted hover:text-primary hover:bg-white/5"
+            className="text-[12px] font-medium inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+            style={{ color: "var(--text-muted)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-primary)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
           >
-            <span className="flex items-center gap-2">
-               {showAdvanced ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
-               {showAdvanced ? t("admin.hide_options") : t("admin.advanced_options")}
-            </span>
+            {showAdvanced ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            {showAdvanced ? t("admin.hide_options") : t("admin.advanced_options")}
           </button>
         </div>
 
         {/* Advanced options */}
         {showAdvanced && (
           <div
-            className="mt-4 p-6 rounded-3xl grid grid-cols-1 md:grid-cols-2 gap-6 animate-slide-up glass-subtle transition-colors duration-300"
+            className="mt-5 p-6 rounded-lg grid grid-cols-1 md:grid-cols-2 gap-5 animate-slide-up border"
+            style={{
+              background: "var(--bg-elevated)",
+              borderColor: "var(--border-soft)",
+            }}
           >
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted pl-1">
+              <label
+                className="text-[11px] font-medium block"
+                style={{ color: "var(--text-muted)" }}
+              >
                 {t("admin.custom_slug")}
               </label>
               <input
@@ -136,11 +146,14 @@ export default function ShortenForm() {
                 value={customKeyword}
                 onChange={(e) => setCustomKeyword(e.target.value)}
                 placeholder="my-link-2024"
-                className="input-glass text-sm"
+                className="input-glass font-mono text-[13px]"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted pl-1">
+              <label
+                className="text-[11px] font-medium block"
+                style={{ color: "var(--text-muted)" }}
+              >
                 {t("admin.custom_title")}
               </label>
               <input
@@ -148,32 +161,49 @@ export default function ShortenForm() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t("admin.auto_metadata")}
-                className="input-glass text-sm"
+                className="input-glass text-[14px]"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted pl-1">
+              <label
+                className="text-[11px] font-medium block"
+                style={{ color: "var(--text-muted)" }}
+              >
                 {t("admin.redirect_protocol")}
               </label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setRedirectType(301)}
-                  className={`flex-1 py-3 rounded-2xl text-[10px] font-bold tracking-widest transition-all border ${redirectType === 301 ? 'bg-primary/20 border-primary shadow-glow-sm text-primary' : 'bg-white/5 border-white/10 text-muted'}`}
-                >
-                  {t("admin.redirect_permanent")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRedirectType(302)}
-                  className={`flex-1 py-3 rounded-2xl text-[10px] font-bold tracking-widest transition-all border ${redirectType === 302 ? 'bg-primary/20 border-primary shadow-glow-sm text-primary' : 'bg-white/5 border-white/10 text-muted'}`}
-                >
-                  {t("admin.redirect_temporary")}
-                </button>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: 301 as const, label: t("admin.redirect_permanent") },
+                  { value: 302 as const, label: t("admin.redirect_temporary") },
+                ].map((opt) => {
+                  const selected = redirectType === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setRedirectType(opt.value)}
+                      className="py-2.5 rounded-md text-[12px] font-medium border cursor-pointer transition-colors"
+                      style={{
+                        background: selected
+                          ? "var(--color-primary)"
+                          : "var(--bg-surface)",
+                        borderColor: selected
+                          ? "var(--color-primary)"
+                          : "var(--input-border)",
+                        color: selected ? "#FFFFFF" : "var(--text-secondary)",
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted pl-1">
+              <label
+                className="text-[11px] font-medium block"
+                style={{ color: "var(--text-muted)" }}
+              >
                 {t("admin.password_lock")}
               </label>
               <input
@@ -181,7 +211,7 @@ export default function ShortenForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="input-glass text-sm"
+                className="input-glass text-[14px]"
               />
             </div>
           </div>
