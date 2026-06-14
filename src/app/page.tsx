@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Globe, BarChart3, QrCode, ShieldCheck } from "lucide-react";
+import { Globe, BarChart3, QrCode, ShieldCheck, MessageCircle, ArrowRight } from "lucide-react";
 import PublicShortenForm from "@/components/PublicShortenForm";
 
 const features = [
@@ -114,6 +114,50 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* CTA — implementación a medida para empresas */}
+      <section
+        className="border-t px-6 md:px-12 py-24 md:py-32"
+        style={{ borderColor: "var(--border)" }}
+      >
+        <div className="max-w-2xl mx-auto text-center flex flex-col items-center">
+          <p className="text-eyebrow mb-6">Para empresas</p>
+          <h2
+            className="font-serif text-[30px] md:text-[44px] leading-tight tracking-tight mb-5"
+            style={{ color: "var(--text-primary)" }}
+          >
+            ¿Quieres el tuyo,{" "}
+            <em
+              className="italic"
+              style={{ color: "var(--color-primary)", fontStyle: "italic" }}
+            >
+              con tu marca
+            </em>
+            ?
+          </h2>
+          <p
+            className="text-[17px] leading-relaxed max-w-prose mb-10"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            Implementamos y gestionamos tu propia plataforma de enlaces cortos,
+            integrada a la estrategia de marketing de tu empresa. Ameizin la
+            construye y la mantiene; tú solo te enfocas en crecer.
+          </p>
+          <a
+            href="https://ameiz.in/ameizin"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary px-7 py-3.5 text-[15px]"
+          >
+            <MessageCircle size={17} strokeWidth={1.75} />
+            Escríbenos por WhatsApp
+            <ArrowRight size={16} strokeWidth={1.75} />
+          </a>
+          <p className="text-[13px] mt-5" style={{ color: "var(--text-muted)" }}>
+            Te respondemos personalmente. Sin compromiso.
+          </p>
         </div>
       </section>
 
