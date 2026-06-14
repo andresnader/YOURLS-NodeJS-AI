@@ -16,6 +16,8 @@ interface UrlItem {
   isHealthy: boolean;
   clicks: number;
   createdAt: string;
+  redirectType?: number;
+  hasPassword?: boolean;
 }
 
 interface PaginationData {

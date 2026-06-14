@@ -8,16 +8,16 @@ import {
   Edit2,
   Trash2,
   QrCode,
-  X,
-  Check,
+  Lock,
   Clock,
   Globe,
 } from "lucide-react";
-import QRCode from "react-qr-code";
 import { useRouter } from "next/navigation";
 import { useToast } from "./Toast";
 import Link from "next/link";
 import { useTranslation } from "@/lib/LanguageContext";
+import EditLinkModal from "./EditLinkModal";
+import QrModal from "./QrModal";
 
 interface UrlItem {
   keyword: string;
@@ -27,6 +27,8 @@ interface UrlItem {
   isHealthy: boolean;
   clicks: number;
   createdAt: string;
+  redirectType?: number;
+  hasPassword?: boolean;
 }
 
 interface LinkTableProps {
@@ -58,9 +60,7 @@ export default function LinkTable({
   onSelectAll,
   allSelected,
 }: LinkTableProps) {
-  const [editingKey, setEditingKey] = useState<string | null>(null);
-  const [editUrl, setEditUrl] = useState("");
-  const [editTitle, setEditTitle] = useState("");
+  const [editingItem, setEditingItem] = useState<UrlItem | null>(null);
   const [showQR, setShowQR] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
@@ -81,38 +81,6 @@ export default function LinkTable({
       await fetch(`/api/shorten/${keyword}`, { method: "DELETE" });
       toast(t("common.success"), "success");
       router.refresh();
-    } catch {
-      toast(t("common.error"), "error");
-    }
-  };
-
-  const startEdit = (item: UrlItem) => {
-    setEditingKey(item.keyword);
-    setEditUrl(item.url);
-    setEditTitle(item.title || "");
-  };
-
-  const cancelEdit = () => {
-    setEditingKey(null);
-    setEditUrl("");
-    setEditTitle("");
-  };
-
-  const saveEdit = async (keyword: string) => {
-    try {
-      const res = await fetch(`/api/shorten/${keyword}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: editUrl, title: editTitle || null }),
-      });
-      if (res.ok) {
-        toast(t("common.success"), "success");
-        cancelEdit();
-        router.refresh();
-      } else {
-        const data = await res.json();
-        toast(data.error || t("common.error"), "error");
-      }
     } catch {
       toast(t("common.error"), "error");
     }
@@ -225,42 +193,26 @@ export default function LinkTable({
                     />
                   </td>
                   <td className={cellPad}>
-                    {editingKey === item.keyword ? (
-                      <div className="space-y-2 max-w-md">
-                        <input
-                          type="text"
-                          value={editTitle}
-                          onChange={(e) => setEditTitle(e.target.value)}
-                          placeholder="Title"
-                          className="input-glass text-[13px] py-1.5"
+                    <div className="flex items-start gap-3">
+                      {item.favicon ? (
+                        <img
+                          src={item.favicon}
+                          alt=""
+                          className="w-5 h-5 rounded mt-0.5 shrink-0"
                         />
-                        <input
-                          type="url"
-                          value={editUrl}
-                          onChange={(e) => setEditUrl(e.target.value)}
-                          className="input-glass text-[13px] py-1.5"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex items-start gap-3">
-                        {item.favicon ? (
-                          <img
-                            src={item.favicon}
-                            alt=""
-                            className="w-5 h-5 rounded mt-0.5 shrink-0"
+                      ) : (
+                        <div
+                          className="w-5 h-5 rounded mt-0.5 shrink-0 flex items-center justify-center"
+                          style={{ background: "var(--bg-hover)" }}
+                        >
+                          <Globe
+                            size={10}
+                            style={{ color: "var(--text-muted)" }}
                           />
-                        ) : (
-                          <div
-                            className="w-5 h-5 rounded mt-0.5 shrink-0 flex items-center justify-center"
-                            style={{ background: "var(--bg-hover)" }}
-                          >
-                            <Globe
-                              size={10}
-                              style={{ color: "var(--text-muted)" }}
-                            />
-                          </div>
-                        )}
-                        <div className="min-w-0">
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <span className="inline-flex items-center gap-1.5">
                           <a
                             href={`/${item.keyword}`}
                             target="_blank"
@@ -271,19 +223,27 @@ export default function LinkTable({
                             /{item.keyword}
                             <ExternalLink size={11} strokeWidth={1.75} />
                           </a>
-                          <p
-                            className="text-[13px] truncate mt-0.5"
-                            style={{ color: "var(--text-primary)" }}
-                          >
-                            {item.title || (
-                              <span style={{ color: "var(--text-muted)" }}>
-                                Untitled
-                              </span>
-                            )}
-                          </p>
-                        </div>
+                          {item.hasPassword && (
+                            <Lock
+                              size={11}
+                              strokeWidth={1.75}
+                              style={{ color: "var(--text-muted)" }}
+                              aria-label="Password protected"
+                            />
+                          )}
+                        </span>
+                        <p
+                          className="text-[13px] truncate mt-0.5"
+                          style={{ color: "var(--text-primary)" }}
+                        >
+                          {item.title || (
+                            <span style={{ color: "var(--text-muted)" }}>
+                              Untitled
+                            </span>
+                          )}
+                        </p>
                       </div>
-                    )}
+                    </div>
                   </td>
                   <td className={`${cellPad} hidden md:table-cell`}>
                     <p
@@ -339,60 +299,35 @@ export default function LinkTable({
                   </td>
                   <td className={cellPad}>
                     <div className="flex items-center justify-end gap-0.5">
-                      {editingKey === item.keyword ? (
-                        <>
+                      {[
+                        { fn: () => handleCopy(item.keyword), icon: Copy, label: "Copy" },
+                        { fn: () => setShowQR(item.keyword), icon: QrCode, label: "QR" },
+                        { fn: () => setEditingItem(item), icon: Edit2, label: "Edit" },
+                        { fn: () => handleDelete(item.keyword), icon: Trash2, label: "Delete" },
+                      ].map((a, idx) => {
+                        const isDanger = a.label === "Delete";
+                        return (
                           <button
-                            onClick={() => saveEdit(item.keyword)}
-                            className="p-1.5 cursor-pointer rounded transition-colors"
-                            style={{ color: "var(--color-success)" }}
-                            title="Save"
+                            key={idx}
+                            onClick={a.fn}
+                            title={a.label}
+                            className="p-1.5 cursor-pointer rounded transition-colors opacity-60 group-hover:opacity-100"
+                            style={{ color: "var(--text-muted)" }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = isDanger
+                                ? "var(--color-danger)"
+                                : "var(--text-primary)";
+                              e.currentTarget.style.background = "var(--bg-hover)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = "var(--text-muted)";
+                              e.currentTarget.style.background = "transparent";
+                            }}
                           >
-                            <Check size={15} strokeWidth={1.75} />
+                            <a.icon size={14} strokeWidth={1.75} />
                           </button>
-                          <button
-                            onClick={cancelEdit}
-                            className="p-1.5 cursor-pointer rounded transition-colors"
-                            style={{ color: "var(--color-danger)" }}
-                            title="Cancel"
-                          >
-                            <X size={15} strokeWidth={1.75} />
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          {[
-                            { fn: () => handleCopy(item.keyword), icon: Copy, label: "Copy" },
-                            { fn: () => setShowQR(item.keyword), icon: QrCode, label: "QR" },
-                            { fn: () => startEdit(item), icon: Edit2, label: "Edit" },
-                            { fn: () => handleDelete(item.keyword), icon: Trash2, label: "Delete" },
-                          ].map((a, idx) => {
-                            const isDanger = a.label === "Delete";
-                            return (
-                              <button
-                                key={idx}
-                                onClick={a.fn}
-                                title={a.label}
-                                className="p-1.5 cursor-pointer rounded transition-colors opacity-60 group-hover:opacity-100"
-                                style={{ color: "var(--text-muted)" }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.color = isDanger
-                                    ? "var(--color-danger)"
-                                    : "var(--text-primary)";
-                                  e.currentTarget.style.background =
-                                    "var(--bg-hover)";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.color =
-                                    "var(--text-muted)";
-                                  e.currentTarget.style.background = "transparent";
-                                }}
-                              >
-                                <a.icon size={14} strokeWidth={1.75} />
-                              </button>
-                            );
-                          })}
-                        </>
-                      )}
+                        );
+                      })}
                     </div>
                   </td>
                 </tr>
@@ -402,60 +337,20 @@ export default function LinkTable({
         </div>
       </div>
 
-      {/* QR Modal */}
-      {showQR && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
-          style={{ background: "rgba(26, 35, 50, 0.55)" }}
-          onClick={() => setShowQR(null)}
-        >
-          <div
-            className="p-8 flex flex-col items-center gap-5 relative max-w-sm w-full border"
-            style={{
-              background: "var(--bg-surface)",
-              borderColor: "var(--border)",
-              borderRadius: "var(--radius-lg)",
-              boxShadow: "var(--shadow-deep)",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setShowQR(null)}
-              aria-label="Close"
-              className="absolute top-4 right-4 p-1.5 rounded cursor-pointer transition-colors"
-              style={{ color: "var(--text-muted)" }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.color = "var(--text-primary)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.color = "var(--text-muted)")
-              }
-            >
-              <X size={18} strokeWidth={1.75} />
-            </button>
-            <h3
-              className="font-serif text-[22px]"
-              style={{ color: "var(--text-primary)" }}
-            >
-              QR Code
-            </h3>
-            <span className="badge-cyber">/{showQR}</span>
-            <div
-              className="p-5 rounded"
-              style={{ background: "#FFFFFF", borderRadius: "var(--radius-md)" }}
-            >
-              <QRCode value={`${window.location.origin}/${showQR}`} size={200} />
-            </div>
-            <button
-              onClick={() => handleCopy(showQR)}
-              className="btn-primary w-full py-3 text-[14px]"
-            >
-              <Copy size={14} strokeWidth={1.75} />
-              Copy Short URL
-            </button>
-          </div>
-        </div>
+      {/* Edit Modal */}
+      {editingItem && (
+        <EditLinkModal
+          item={editingItem}
+          onClose={() => setEditingItem(null)}
+          onSaved={() => {
+            setEditingItem(null);
+            router.refresh();
+          }}
+        />
       )}
+
+      {/* QR Modal */}
+      {showQR && <QrModal keyword={showQR} onClose={() => setShowQR(null)} />}
     </>
   );
 }

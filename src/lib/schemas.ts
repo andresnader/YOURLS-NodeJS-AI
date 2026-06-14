@@ -28,6 +28,28 @@ export const ShortenResponse = z.object({
 });
 export type ShortenResponse = z.infer<typeof ShortenResponse>;
 
+/**
+ * Partial update of an existing link. Every field is optional, but at least one
+ * must be present (enforced in the handler). `keyword` renames the short code,
+ * which migrates all associated click logs. `password` sets protection; an empty
+ * string clears it.
+ */
+export const UpdateLinkRequest = z
+  .object({
+    url: z.string().url('Must be a valid absolute URL').optional(),
+    title: z.string().max(255).nullable().optional(),
+    keyword: z
+      .string()
+      .min(1)
+      .max(64)
+      .regex(/^[a-zA-Z0-9_-]+$/, 'Only letters, digits, underscores and dashes are allowed')
+      .optional(),
+    redirectType: z.union([z.literal(301), z.literal(302), z.literal(307)]).optional(),
+    password: z.string().max(255).nullable().optional(),
+  })
+  .strict();
+export type UpdateLinkRequest = z.infer<typeof UpdateLinkRequest>;
+
 export const ListLinksQuery = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),

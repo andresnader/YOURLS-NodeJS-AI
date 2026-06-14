@@ -106,8 +106,14 @@ export async function shortenGetList(request: Request): Promise<Response> {
       prisma.url.count({ where }),
     ]);
 
+    // Never ship the password hash to clients; expose only whether one is set.
+    const sanitized = urls.map(({ password, ...rest }) => ({
+      ...rest,
+      hasPassword: Boolean(password),
+    }));
+
     return NextResponse.json({
-      data: urls,
+      data: sanitized,
       pagination: {
         page,
         limit,

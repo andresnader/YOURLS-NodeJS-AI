@@ -5,7 +5,7 @@ import { fetchMetadata } from '@/lib/metadata';
 import type { ShortenRequest } from '@/lib/schemas';
 import type { SessionPayload } from '@/lib/session';
 
-const RESERVED_KEYWORDS = new Set([
+export const RESERVED_KEYWORDS = new Set([
   'admin', 'api', 'login', 'stats', 'protected', 'auth', 'export',
   'dashboard', 'config', 'settings', 'public', 'css', 'js', 'images', 'favicon.ico',
 ]);
@@ -26,7 +26,7 @@ export type ShortenSuccess = {
   clicks: number;
 };
 
-function sanitizeKeyword(raw: string): string {
+export function sanitizeKeyword(raw: string): string {
   return raw.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
 }
 
