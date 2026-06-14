@@ -1,16 +1,7 @@
 import Link from "next/link";
 import PublicShortenForm from "@/components/PublicShortenForm";
-import prisma from "@/lib/prisma";
 
-export const dynamic = "force-dynamic";
-
-export default async function LandingPage() {
-  const totalLinks = await prisma.url.count();
-  const totalClicksResult = await prisma.url.aggregate({
-    _sum: { clicks: true },
-  });
-  const totalClicks = totalClicksResult._sum.clicks || 0;
-
+export default function LandingPage() {
   return (
     <main className="min-h-screen flex flex-col">
       {/* Top bar */}
@@ -25,14 +16,6 @@ export default async function LandingPage() {
             Node
           </span>
         </Link>
-        <div className="flex items-center gap-2">
-          <Link href="/admin" className="btn-ghost text-[13px]">
-            Dashboard
-          </Link>
-          <Link href="/login" className="btn-primary text-[13px] px-4 py-2">
-            Sign in
-          </Link>
-        </div>
       </nav>
 
       {/* Hero */}
@@ -62,39 +45,10 @@ export default async function LandingPage() {
         <PublicShortenForm />
       </section>
 
-      {/* Stats strip */}
-      <section
-        className="border-t border-b px-6 md:px-12 py-10"
-        style={{
-          borderColor: "var(--border)",
-          background: "var(--bg-deep)",
-        }}
-      >
-        <div className="max-w-3xl mx-auto grid grid-cols-3 gap-8">
-          {[
-            { value: totalLinks, label: "Links created" },
-            { value: totalClicks, label: "Redirects served" },
-            { value: "99.9%", label: "Uptime" },
-          ].map((stat) => (
-            <div key={stat.label} className="text-center">
-              <p
-                className="font-serif text-[32px] md:text-[40px] leading-none mb-2 tracking-tight"
-                style={{ color: "var(--text-primary)" }}
-              >
-                {typeof stat.value === "number"
-                  ? stat.value.toLocaleString()
-                  : stat.value}
-              </p>
-              <p className="text-eyebrow">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* Footer */}
       <footer
-        className="px-6 md:px-12 py-8 flex flex-col md:flex-row items-center justify-between gap-3"
-        style={{ color: "var(--text-muted)" }}
+        className="px-6 md:px-12 py-8 flex flex-col md:flex-row items-center justify-between gap-3 border-t"
+        style={{ color: "var(--text-muted)", borderColor: "var(--border)" }}
       >
         <p className="text-[13px]">
           Self-hosted on YOURLS Node — open source.

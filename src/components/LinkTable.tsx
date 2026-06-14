@@ -163,8 +163,8 @@ export default function LinkTable({
                   Status
                 </th>
                 <th
-                  className={`${headPad} text-right text-[11px] font-medium uppercase tracking-[0.1em]`}
-                  style={{ color: "var(--text-muted)" }}
+                  className={`${headPad} text-right text-[11px] font-medium uppercase tracking-[0.1em] sticky right-0`}
+                  style={{ color: "var(--text-muted)", background: "var(--bg-surface)" }}
                 >
                   Actions
                 </th>
@@ -297,7 +297,13 @@ export default function LinkTable({
                       </div>
                     </div>
                   </td>
-                  <td className={cellPad}>
+                  <td
+                    className={`${cellPad} sticky right-0`}
+                    style={{
+                      background: "var(--bg-surface)",
+                      borderLeft: "1px solid var(--border-soft)",
+                    }}
+                  >
                     <div className="flex items-center justify-end gap-0.5">
                       {[
                         { fn: () => handleCopy(item.keyword), icon: Copy, label: "Copy" },
