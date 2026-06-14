@@ -13,9 +13,10 @@ const cspHeader = {
   value: [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: https:",
-    "font-src 'self' data:",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    // blob: needed for client-side QR PNG generation (canvas -> Image -> blob)
+    "img-src 'self' data: https: blob:",
+    "font-src 'self' data: https://fonts.gstatic.com",
     "connect-src 'self'",
     "frame-ancestors 'none'",
     "base-uri 'self'",
