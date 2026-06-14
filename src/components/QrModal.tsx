@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Copy, Download, ImagePlus, Trash2 } from "lucide-react";
 import QRCode from "react-qr-code";
 import { useToast } from "./Toast";
@@ -144,7 +145,9 @@ export default function QrModal({ keyword, onClose }: QrModalProps) {
     img.src = url;
   };
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
       style={{ background: "rgba(26, 35, 50, 0.55)" }}
@@ -269,6 +272,7 @@ export default function QrModal({ keyword, onClose }: QrModalProps) {
           <Copy size={14} strokeWidth={1.75} /> Copy short URL
         </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

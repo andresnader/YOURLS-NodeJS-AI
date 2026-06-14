@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Check, Loader2, Link2, Type, Hash, Shield, AlertTriangle } from "lucide-react";
 import { useToast } from "./Toast";
 
@@ -86,7 +87,9 @@ export default function EditLinkModal({ item, onClose, onSaved }: EditLinkModalP
     }
   };
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
       style={{ background: "rgba(26, 35, 50, 0.55)" }}
@@ -225,6 +228,7 @@ export default function EditLinkModal({ item, onClose, onSaved }: EditLinkModalP
           </button>
         </div>
       </form>
-    </div>
+    </div>,
+    document.body,
   );
 }
