@@ -36,7 +36,7 @@ export default function PublicShortenForm() {
         const data = await res.json();
         const shortUrl = `${window.location.origin}/${data.data.keyword}`;
         setLastShortUrl(shortUrl);
-        toast("Success! Your link is ready.", "success");
+        toast("¡Listo! Tu enlace está creado.", "success");
 
         try {
           await navigator.clipboard.writeText(shortUrl);
@@ -50,10 +50,10 @@ export default function PublicShortenForm() {
         router.refresh();
       } else {
         const errorData = await res.json();
-        toast(errorData.error || "Failed to shorten URL", "error");
+        toast(errorData.error || "No se pudo acortar el enlace", "error");
       }
     } catch {
-      toast("Connection error", "error");
+      toast("Error de conexión", "error");
     } finally {
       setLoading(false);
     }
@@ -65,7 +65,7 @@ export default function PublicShortenForm() {
       await navigator.clipboard.writeText(lastShortUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 3000);
-      toast("Copied to clipboard", "success");
+      toast("Copiado al portapapeles", "success");
     } catch {}
   };
 
@@ -93,7 +93,7 @@ export default function PublicShortenForm() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             required
-            placeholder="Paste your long link"
+            placeholder="Pega tu enlace largo"
             className="flex-1 bg-transparent border-none outline-none py-3 text-[15px]"
             style={{ color: "var(--text-primary)" }}
           />
@@ -102,8 +102,8 @@ export default function PublicShortenForm() {
           type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
           className="btn-ghost px-4"
-          aria-label="Advanced options"
-          title="Advanced options"
+          aria-label="Opciones avanzadas"
+          title="Opciones avanzadas"
         >
           <Settings2 size={16} strokeWidth={1.75} />
         </button>
@@ -112,7 +112,7 @@ export default function PublicShortenForm() {
           disabled={loading}
           className="btn-primary px-6 whitespace-nowrap min-w-[140px]"
         >
-          {loading ? "Shortening…" : "Shorten"}
+          {loading ? "Acortando…" : "Acortar"}
         </button>
       </form>
 
@@ -129,13 +129,13 @@ export default function PublicShortenForm() {
             className="text-[12px] font-medium block mb-2"
             style={{ color: "var(--text-muted)" }}
           >
-            Custom slug (optional)
+            Enlace personalizado (opcional)
           </label>
           <input
             type="text"
             value={customKeyword}
             onChange={(e) => setCustomKeyword(e.target.value)}
-            placeholder="my-link"
+            placeholder="mi-enlace"
             className="input-glass font-mono text-[13px]"
           />
         </div>
@@ -154,7 +154,7 @@ export default function PublicShortenForm() {
             className="text-eyebrow shrink-0"
             style={{ color: "var(--text-muted)" }}
           >
-            Created
+            Creado
           </span>
           <code
             className="font-mono text-[14px] flex-1 min-w-0 truncate select-all"
@@ -165,17 +165,17 @@ export default function PublicShortenForm() {
           <button
             onClick={handleCopy}
             className="btn-ghost px-3 py-2"
-            aria-label="Copy"
+            aria-label="Copiar"
           >
             {copied ? (
               <>
                 <Check size={14} strokeWidth={1.75} />
-                Copied
+                Copiado
               </>
             ) : (
               <>
                 <Copy size={14} strokeWidth={1.75} />
-                Copy
+                Copiar
               </>
             )}
           </button>
