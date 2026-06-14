@@ -13,6 +13,7 @@ import {
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/lib/LanguageContext";
 import { useTheme } from "next-themes";
+import ApiKeysManager from "@/components/ApiKeysManager";
 
 type UserRow = { id: string; username: string; role: string; _count: { urls: number } };
 
@@ -423,6 +424,11 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      <hr className="rule" />
+
+      {/* API keys (moved here from the sidebar) */}
+      <ApiKeysManager />
     </div>
   );
 }

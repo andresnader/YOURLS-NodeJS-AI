@@ -7,7 +7,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Menu,
-  Key,
   BookOpen,
   X,
 } from "lucide-react";
@@ -36,8 +35,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const menuItems = [
     { name: t("common.dashboard"), icon: LayoutDashboard, href: "/admin" },
     { name: t("common.stats"), icon: BarChart3, href: "/admin/stats" },
-    { name: t("common.api_keys"), icon: Key, href: "/admin/keys" },
-    { name: t("common.documentation"), icon: BookOpen, href: "/admin/docs" },
     { name: t("common.settings"), icon: Settings, href: "/admin/settings" },
   ];
 
@@ -139,9 +136,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         <div
-          className="px-4 py-5 border-t"
+          className={`px-4 py-5 border-t flex items-center gap-2 ${
+            collapsed ? "flex-col" : "flex-row"
+          }`}
           style={{ borderColor: "var(--border)" }}
         >
+          <Link
+            href="/admin/docs"
+            title={t("common.documentation")}
+            aria-label={t("common.documentation")}
+            className="w-9 h-9 flex items-center justify-center transition-colors cursor-pointer"
+            style={{
+              background: "transparent",
+              border: "1px solid var(--border)",
+              color: "var(--text-muted)",
+              borderRadius: "var(--radius-md)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "var(--color-primary)";
+              e.currentTarget.style.borderColor = "var(--border-glow)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "var(--text-muted)";
+              e.currentTarget.style.borderColor = "var(--border)";
+            }}
+          >
+            <BookOpen size={14} strokeWidth={1.75} />
+          </Link>
           <LogoutButton />
         </div>
       </aside>
@@ -206,9 +227,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             })}
           </nav>
           <div
-            className="pt-4 border-t"
+            className="pt-4 border-t flex items-center gap-2"
             style={{ borderColor: "var(--border)" }}
           >
+            <Link
+              href="/admin/docs"
+              onClick={() => setMobileOpen(false)}
+              title={t("common.documentation")}
+              aria-label={t("common.documentation")}
+              className="w-9 h-9 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+              style={{
+                background: "transparent",
+                border: "1px solid var(--border)",
+                color: "var(--text-muted)",
+                borderRadius: "var(--radius-md)",
+              }}
+            >
+              <BookOpen size={14} strokeWidth={1.75} />
+            </Link>
             <LogoutButton />
           </div>
         </div>
