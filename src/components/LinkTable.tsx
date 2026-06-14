@@ -311,8 +311,8 @@ export default function LinkTable({
                             key={idx}
                             onClick={a.fn}
                             title={a.label}
-                            className="p-1.5 cursor-pointer rounded transition-colors opacity-60 group-hover:opacity-100"
-                            style={{ color: "var(--text-muted)" }}
+                            className="p-1.5 cursor-pointer rounded transition-colors opacity-100"
+                            style={{ color: "var(--text-secondary)" }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.color = isDanger
                                 ? "var(--color-danger)"
@@ -320,7 +320,7 @@ export default function LinkTable({
                               e.currentTarget.style.background = "var(--bg-hover)";
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.color = "var(--text-muted)";
+                              e.currentTarget.style.color = "var(--text-secondary)";
                               e.currentTarget.style.background = "transparent";
                             }}
                           >
