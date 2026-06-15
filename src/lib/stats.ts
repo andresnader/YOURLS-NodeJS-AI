@@ -37,11 +37,11 @@ const RANGE_DAYS: Record<TimeRange, number | null> = {
   all: null,
 };
 
-/** Friendly host extraction. "Direct" or null → "Direct". */
+/** Friendly host extraction. "Direct"/"Directo" or null → "Directo". */
 function normalizeReferrer(ref: string | null): string {
-  if (!ref || ref === 'Direct') return 'Direct';
+  if (!ref || ref === 'Direct' || ref === 'Directo') return 'Directo';
   try {
-    return new URL(ref).host || 'Direct';
+    return new URL(ref).host || 'Directo';
   } catch {
     return ref.slice(0, 80);
   }

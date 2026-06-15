@@ -56,7 +56,7 @@ export default function AdminLinkManager() {
       setUrls(data.data || []);
       setPagination(data.pagination || { page: 1, limit: 15, total: 0, totalPages: 0 });
     } catch {
-      toast("Failed to load links", "error");
+      toast("No se pudieron cargar los enlaces", "error");
     } finally {
       setLoading(false);
     }
@@ -114,7 +114,7 @@ export default function AdminLinkManager() {
 
   const handleBulkDelete = async () => {
     if (selectedKeys.size === 0) return;
-    if (!confirm(`Delete ${selectedKeys.size} link(s) permanently?`)) return;
+    if (!confirm(`¿Eliminar ${selectedKeys.size} enlace(s) de forma permanente?`)) return;
 
     try {
       const res = await fetch("/api/shorten", {
@@ -123,15 +123,15 @@ export default function AdminLinkManager() {
         body: JSON.stringify({ keywords: Array.from(selectedKeys) }),
       });
       if (res.ok) {
-        toast(`Deleted ${selectedKeys.size} link(s)`, "success");
+        toast(`${selectedKeys.size} enlace(s) eliminado(s)`, "success");
         setSelectedKeys(new Set());
         fetchUrls(pagination.page);
         router.refresh();
       } else {
-        toast("Failed to delete links", "error");
+        toast("No se pudieron eliminar los enlaces", "error");
       }
     } catch {
-      toast("Network error", "error");
+      toast("Error de conexión", "error");
     }
   };
 
@@ -160,16 +160,16 @@ export default function AdminLinkManager() {
           }}
         >
           <span className="text-[13px] font-medium" style={{ color: "var(--text-primary)" }}>
-            {selectedKeys.size} selected
+            {selectedKeys.size} seleccionado(s)
           </span>
           <button onClick={handleBulkDelete} className="btn-danger text-[12px] py-1.5 px-3">
-            <Trash2 size={13} strokeWidth={1.75} /> Delete Selected
+            <Trash2 size={13} strokeWidth={1.75} /> Eliminar seleccionados
           </button>
           <button
             onClick={() => setSelectedKeys(new Set())}
             className="btn-ghost text-[12px] py-1.5 px-3"
           >
-            Clear
+            Limpiar
           </button>
         </div>
       )}
@@ -192,7 +192,7 @@ export default function AdminLinkManager() {
             }}
           />
           <p className="text-[13px]" style={{ color: "var(--text-muted)" }}>
-            Loading links…
+            Cargando enlaces…
           </p>
         </div>
       ) : (
@@ -208,7 +208,7 @@ export default function AdminLinkManager() {
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <span className="text-[12px]" style={{ color: "var(--text-muted)" }}>
-          {pagination.total} total link{pagination.total !== 1 ? "s" : ""}
+          {pagination.total} enlace{pagination.total !== 1 ? "s" : ""} en total
         </span>
         <Pagination
           page={pagination.page}

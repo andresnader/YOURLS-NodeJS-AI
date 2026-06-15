@@ -6,69 +6,69 @@ type Props = {
 };
 
 const COUNTRY_NAMES: Record<string, string> = {
-  US: "United States",
+  US: "Estados Unidos",
   EC: "Ecuador",
-  ES: "Spain",
-  MX: "Mexico",
+  ES: "España",
+  MX: "México",
   AR: "Argentina",
   CO: "Colombia",
-  BR: "Brazil",
+  BR: "Brasil",
   CL: "Chile",
-  PE: "Peru",
+  PE: "Perú",
   VE: "Venezuela",
   UY: "Uruguay",
   PY: "Paraguay",
   BO: "Bolivia",
   CR: "Costa Rica",
-  PA: "Panama",
+  PA: "Panamá",
   GT: "Guatemala",
   HN: "Honduras",
   SV: "El Salvador",
   NI: "Nicaragua",
-  DO: "Dominican Republic",
+  DO: "República Dominicana",
   CU: "Cuba",
   PR: "Puerto Rico",
-  CA: "Canada",
-  GB: "United Kingdom",
-  DE: "Germany",
-  FR: "France",
-  IT: "Italy",
+  CA: "Canadá",
+  GB: "Reino Unido",
+  DE: "Alemania",
+  FR: "Francia",
+  IT: "Italia",
   PT: "Portugal",
-  NL: "Netherlands",
-  BE: "Belgium",
-  CH: "Switzerland",
+  NL: "Países Bajos",
+  BE: "Bélgica",
+  CH: "Suiza",
   AT: "Austria",
-  SE: "Sweden",
-  NO: "Norway",
-  DK: "Denmark",
-  FI: "Finland",
-  PL: "Poland",
-  CZ: "Czechia",
-  IE: "Ireland",
-  GR: "Greece",
-  TR: "Turkey",
-  RU: "Russia",
-  UA: "Ukraine",
+  SE: "Suecia",
+  NO: "Noruega",
+  DK: "Dinamarca",
+  FI: "Finlandia",
+  PL: "Polonia",
+  CZ: "Chequia",
+  IE: "Irlanda",
+  GR: "Grecia",
+  TR: "Turquía",
+  RU: "Rusia",
+  UA: "Ucrania",
   IL: "Israel",
-  AE: "United Arab Emirates",
-  SA: "Saudi Arabia",
-  EG: "Egypt",
-  MA: "Morocco",
-  ZA: "South Africa",
+  AE: "Emiratos Árabes Unidos",
+  SA: "Arabia Saudita",
+  EG: "Egipto",
+  MA: "Marruecos",
+  ZA: "Sudáfrica",
   NG: "Nigeria",
-  KE: "Kenya",
+  KE: "Kenia",
   IN: "India",
   CN: "China",
-  JP: "Japan",
-  KR: "South Korea",
-  TH: "Thailand",
+  JP: "Japón",
+  KR: "Corea del Sur",
+  TH: "Tailandia",
   VN: "Vietnam",
   ID: "Indonesia",
-  PH: "Philippines",
-  MY: "Malaysia",
-  SG: "Singapore",
+  PH: "Filipinas",
+  MY: "Malasia",
+  SG: "Singapur",
   AU: "Australia",
-  NZ: "New Zealand",
+  NZ: "Nueva Zelanda",
 };
 
 function flag(code: string): string {
@@ -96,7 +96,7 @@ export default function GeoChart({ countries, cities }: Props) {
         className="text-[13px] py-8 text-center"
         style={{ color: "var(--text-muted)" }}
       >
-        No geographic data captured yet.
+        Aún no hay datos geográficos registrados.
       </p>
     );
   }
@@ -104,7 +104,7 @@ export default function GeoChart({ countries, cities }: Props) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <div className="space-y-3">
-        <p className="text-eyebrow">Top countries</p>
+        <p className="text-eyebrow">Países principales</p>
         <ul className="space-y-2.5">
           {sortedCountries.map(([code, n]) => {
             const pct = total > 0 ? (n / total) * 100 : 0;
@@ -152,13 +152,13 @@ export default function GeoChart({ countries, cities }: Props) {
       </div>
 
       <div className="space-y-3">
-        <p className="text-eyebrow">Top cities</p>
+        <p className="text-eyebrow">Ciudades principales</p>
         {sortedCities.length === 0 ? (
           <p
             className="text-[13px] py-4"
             style={{ color: "var(--text-muted)" }}
           >
-            City data only available for clicks captured after the geo update.
+            Los datos de ciudad solo están disponibles para clics registrados tras la actualización geográfica.
           </p>
         ) : (
           <ul className="space-y-2">

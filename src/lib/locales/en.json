@@ -52,5 +52,11 @@
     "create_user": "Create User",
     "health_check": "Health Check",
     "metadata": "Metadata Extraction"
+  },
+  "stats": {
+    "links": "Links",
+    "clicks": "Clicks",
+    "links_today": "Links today",
+    "clicks_today": "Clicks today"
   }
 }

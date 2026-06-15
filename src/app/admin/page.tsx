@@ -73,7 +73,7 @@ export default function AdminPage() {
       {/* Tools */}
       <section>
         <div className="flex items-baseline justify-between mb-5">
-          <h2 className="text-eyebrow">Tools</h2>
+          <h2 className="text-eyebrow">Herramientas</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Bookmarklet />

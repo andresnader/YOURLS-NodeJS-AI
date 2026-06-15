@@ -121,7 +121,7 @@ export default function StatsCharts({ data }: { data: StatsData }) {
     datasets: [
       {
         fill: true,
-        label: "Clicks",
+        label: "Clics",
         data: Object.values(data.timeSeries),
         borderColor: primary,
         backgroundColor: `${primary}1A`, // ~10% alpha
@@ -189,12 +189,12 @@ export default function StatsCharts({ data }: { data: StatsData }) {
         style={cardStyle}
       >
         <header className="mb-6">
-          <p className="text-eyebrow">{isHourly ? "Last 24 hours" : "Click velocity"}</p>
+          <p className="text-eyebrow">{isHourly ? "Últimas 24 horas" : "Velocidad de clics"}</p>
           <h3
             className="font-serif text-[20px] mt-1"
             style={{ color: textPrimary }}
           >
-            {isHourly ? "Hourly clicks" : "Daily clicks"}
+            {isHourly ? "Clics por hora" : "Clics por día"}
           </h3>
         </header>
         <div className="h-64">
@@ -203,13 +203,13 @@ export default function StatsCharts({ data }: { data: StatsData }) {
       </article>
 
       {[
-        { title: "Browsers", source: data.browsers },
-        { title: "Operating systems", source: data.os },
-        { title: "Devices", source: data.devices },
+        { title: "Navegadores", source: data.browsers },
+        { title: "Sistemas operativos", source: data.os },
+        { title: "Dispositivos", source: data.devices },
       ].map((chart) => (
         <article key={chart.title} className="p-7" style={cardStyle}>
           <header className="mb-6">
-            <p className="text-eyebrow">Breakdown</p>
+            <p className="text-eyebrow">Desglose</p>
             <h3
               className="font-serif text-[20px] mt-1"
               style={{ color: textPrimary }}

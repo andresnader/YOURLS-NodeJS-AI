@@ -36,16 +36,16 @@ export default async function KeywordStatsPage({
     <div className="max-w-6xl mx-auto px-6 md:px-12 py-10 md:py-14 space-y-12 animate-fade-in">
       <header className="space-y-5">
         <Link
-          href="/admin"
+          href="/admin/stats"
           className="inline-flex items-center gap-1.5 text-[13px] transition-colors"
           style={{ color: "var(--text-muted)" }}
         >
           <ArrowLeft size={13} strokeWidth={1.75} />
-          Back to dashboard
+          Volver a estadísticas
         </Link>
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div className="space-y-2">
-            <p className="text-eyebrow">Link analytics</p>
+            <p className="text-eyebrow">Analíticas del enlace</p>
             <h1
               className="text-h1"
               style={{ color: "var(--text-primary)" }}
@@ -65,7 +65,7 @@ export default async function KeywordStatsPage({
               download
             >
               <Download size={14} strokeWidth={1.75} />
-              Export CSV
+              Exportar CSV
             </a>
             <a
               href={`/${keyword}`}
@@ -74,12 +74,12 @@ export default async function KeywordStatsPage({
               className="btn-ghost inline-flex items-center gap-2 text-[13px]"
             >
               <ExternalLink size={14} strokeWidth={1.75} />
-              Visit link
+              Visitar enlace
             </a>
           </div>
         </div>
         <div className="flex items-center justify-between gap-4 pt-2">
-          <span className="text-eyebrow">Range</span>
+          <span className="text-eyebrow">Periodo</span>
           <RangeSelector active={range} />
         </div>
       </header>
@@ -97,7 +97,7 @@ export default async function KeywordStatsPage({
               color: "var(--text-muted)",
             }}
           >
-            Loading analytics…
+            Cargando analíticas…
           </div>
         }
       >
@@ -124,26 +124,26 @@ async function StatsContent({
       <div className="space-y-12">
         {/* Overview KPIs */}
         <section>
-          <h2 className="text-eyebrow mb-5">Overview</h2>
+          <h2 className="text-eyebrow mb-5">Resumen</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4">
             {[
               {
-                label: "Total clicks",
+                label: "Clics totales",
                 value: data.totalClicks.toLocaleString(),
                 icon: MousePointer2,
               },
               {
-                label: range === "all" ? "All-time clicks" : `Clicks in range`,
+                label: range === "all" ? "Clics históricos" : `Clics en el periodo`,
                 value: data.rangeClicks.toLocaleString(),
                 icon: Calendar,
               },
               {
-                label: "Countries",
+                label: "Países",
                 value: Object.keys(data.countries).length.toString(),
                 icon: Globe,
               },
               {
-                label: range === "24h" ? "Peak hour" : "Peak day",
+                label: range === "24h" ? "Hora pico" : "Día pico",
                 value: peakInRange.toString(),
                 icon: Calendar,
               },
@@ -181,7 +181,7 @@ async function StatsContent({
 
         {/* Destination */}
         <section>
-          <h2 className="text-eyebrow mb-3">Destination</h2>
+          <h2 className="text-eyebrow mb-3">Destino</h2>
           <a
             href={data.longUrl}
             target="_blank"
@@ -196,13 +196,13 @@ async function StatsContent({
 
         {/* Trend + Heatmap */}
         <section>
-          <h2 className="text-eyebrow mb-5">Trends</h2>
+          <h2 className="text-eyebrow mb-5">Tendencias</h2>
           <StatsCharts data={data} />
         </section>
 
         {/* Heatmap (only useful with enough data) */}
         <section>
-          <h2 className="text-eyebrow mb-5">Activity heatmap</h2>
+          <h2 className="text-eyebrow mb-5">Mapa de actividad</h2>
           <div
             className="p-6 border"
             style={{
@@ -213,7 +213,7 @@ async function StatsContent({
           >
             <div className="mb-4">
               <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>
-                Day of week vs hour (UTC). Darker = more clicks.
+                Día de la semana vs hora (UTC). Más oscuro = más clics.
               </p>
             </div>
             <ClickHeatmap data={data.hourlyHeatmap} />
@@ -222,7 +222,7 @@ async function StatsContent({
 
         {/* Geo */}
         <section>
-          <h2 className="text-eyebrow mb-5">Geography</h2>
+          <h2 className="text-eyebrow mb-5">Geografía</h2>
           <div
             className="p-7 border"
             style={{
@@ -252,7 +252,7 @@ async function StatsContent({
 
         {/* Recent */}
         <section>
-          <h2 className="text-eyebrow mb-5">Recent clicks</h2>
+          <h2 className="text-eyebrow mb-5">Clics recientes</h2>
           <div
             className="border"
             style={{
@@ -278,7 +278,7 @@ async function StatsContent({
           color: "var(--color-danger)",
         }}
       >
-        Could not load stats for this keyword. Try again in a moment.
+        No se pudieron cargar las estadísticas de este enlace. Inténtalo de nuevo en un momento.
       </div>
     );
   }

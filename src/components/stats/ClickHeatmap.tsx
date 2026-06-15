@@ -1,6 +1,6 @@
 "use client";
 
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
 export default function ClickHeatmap({ data }: { data: number[][] }) {
   const max = Math.max(1, ...data.flat());
@@ -12,7 +12,7 @@ export default function ClickHeatmap({ data }: { data: number[][] }) {
         className="text-[13px] py-8 text-center"
         style={{ color: "var(--text-muted)" }}
       >
-        No timing data captured yet.
+        Aún no hay datos de horarios registrados.
       </p>
     );
   }
@@ -39,7 +39,7 @@ export default function ClickHeatmap({ data }: { data: number[][] }) {
       </div>
 
       <div className="mt-4 flex items-center gap-2 text-[11px]" style={{ color: "var(--text-muted)" }}>
-        <span>Less</span>
+        <span>Menos</span>
         {[0.15, 0.35, 0.55, 0.75, 1].map((alpha, i) => (
           <span
             key={i}
@@ -50,7 +50,7 @@ export default function ClickHeatmap({ data }: { data: number[][] }) {
             }}
           />
         ))}
-        <span>More</span>
+        <span>Más</span>
       </div>
     </div>
   );
@@ -78,7 +78,7 @@ function DayRow({
         return (
           <div
             key={h}
-            title={`${dayName} ${h}:00 — ${v} click${v === 1 ? "" : "s"}`}
+            title={`${dayName} ${h}:00 — ${v} clic${v === 1 ? "" : "s"}`}
             className="aspect-square w-full"
             style={{
               background:

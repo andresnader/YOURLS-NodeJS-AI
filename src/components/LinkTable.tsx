@@ -41,16 +41,17 @@ interface LinkTableProps {
 
 function timeAgo(date: string) {
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
-  if (seconds < 60) return "just now";
+  if (seconds < 60) return "ahora mismo";
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) return `hace ${minutes}m`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return `hace ${hours}h`;
   const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
+  if (days < 30) return `hace ${days}d`;
   const months = Math.floor(days / 30);
-  if (months < 12) return `${months}mo ago`;
-  return `${Math.floor(months / 12)}y ago`;
+  if (months < 12) return `hace ${months} mes${months === 1 ? "" : "es"}`;
+  const years = Math.floor(months / 12);
+  return `hace ${years} año${years === 1 ? "" : "s"}`;
 }
 
 export default function LinkTable({
@@ -76,7 +77,7 @@ export default function LinkTable({
   };
 
   const handleDelete = async (keyword: string) => {
-    if (!confirm("Delete this link?")) return;
+    if (!confirm("¿Eliminar este enlace?")) return;
     try {
       await fetch(`/api/shorten/${keyword}`, { method: "DELETE" });
       toast(t("common.success"), "success");
@@ -103,10 +104,10 @@ export default function LinkTable({
           style={{ color: "var(--text-muted)" }}
         />
         <p className="font-serif text-[22px]" style={{ color: "var(--text-primary)" }}>
-          No links yet
+          Aún no hay enlaces
         </p>
         <p className="text-[14px] mt-2" style={{ color: "var(--text-muted)" }}>
-          Shorten your first URL to get started.
+          Acorta tu primera URL para comenzar.
         </p>
       </div>
     );
@@ -142,31 +143,31 @@ export default function LinkTable({
                   className={`${headPad} text-left text-[11px] font-medium uppercase tracking-[0.1em]`}
                   style={{ color: "var(--text-muted)" }}
                 >
-                  Short link
+                  Enlace corto
                 </th>
                 <th
                   className={`${headPad} text-left text-[11px] font-medium uppercase tracking-[0.1em] hidden md:table-cell`}
                   style={{ color: "var(--text-muted)" }}
                 >
-                  Destination
+                  Destino
                 </th>
                 <th
                   className={`${headPad} text-right text-[11px] font-medium uppercase tracking-[0.1em]`}
                   style={{ color: "var(--text-muted)" }}
                 >
-                  Clicks
+                  Clics
                 </th>
                 <th
                   className={`${headPad} text-left text-[11px] font-medium uppercase tracking-[0.1em] hidden lg:table-cell`}
                   style={{ color: "var(--text-muted)" }}
                 >
-                  Status
+                  Estado
                 </th>
                 <th
                   className={`${headPad} text-right text-[11px] font-medium uppercase tracking-[0.1em] sticky right-0`}
                   style={{ color: "var(--text-muted)", background: "var(--bg-surface)" }}
                 >
-                  Actions
+                  Acciones
                 </th>
               </tr>
             </thead>
@@ -228,7 +229,7 @@ export default function LinkTable({
                               size={11}
                               strokeWidth={1.75}
                               style={{ color: "var(--text-muted)" }}
-                              aria-label="Password protected"
+                              aria-label="Protegido con contraseña"
                             />
                           )}
                         </span>
@@ -238,7 +239,7 @@ export default function LinkTable({
                         >
                           {item.title || (
                             <span style={{ color: "var(--text-muted)" }}>
-                              Untitled
+                              Sin título
                             </span>
                           )}
                         </p>
@@ -285,7 +286,7 @@ export default function LinkTable({
                               : "var(--color-danger)",
                           }}
                         >
-                          {item.isHealthy ? "Healthy" : "Down"}
+                          {item.isHealthy ? "Activo" : "Caído"}
                         </span>
                       </div>
                       <div
@@ -306,12 +307,12 @@ export default function LinkTable({
                   >
                     <div className="flex items-center justify-end gap-0.5">
                       {[
-                        { fn: () => handleCopy(item.keyword), icon: Copy, label: "Copy" },
+                        { fn: () => handleCopy(item.keyword), icon: Copy, label: "Copiar" },
                         { fn: () => setShowQR(item.keyword), icon: QrCode, label: "QR" },
-                        { fn: () => setEditingItem(item), icon: Edit2, label: "Edit" },
-                        { fn: () => handleDelete(item.keyword), icon: Trash2, label: "Delete" },
+                        { fn: () => setEditingItem(item), icon: Edit2, label: "Editar" },
+                        { fn: () => handleDelete(item.keyword), icon: Trash2, label: "Eliminar" },
                       ].map((a, idx) => {
-                        const isDanger = a.label === "Delete";
+                        const isDanger = a.label === "Eliminar";
                         return (
                           <button
                             key={idx}

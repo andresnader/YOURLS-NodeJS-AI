@@ -52,5 +52,11 @@
     "create_user": "Crear Usuario",
     "health_check": "Revisión de Salud",
     "metadata": "Extracción de Metadatos"
+  },
+  "stats": {
+    "links": "Enlaces",
+    "clicks": "Clics",
+    "links_today": "Enlaces hoy",
+    "clicks_today": "Clics hoy"
   }
 }

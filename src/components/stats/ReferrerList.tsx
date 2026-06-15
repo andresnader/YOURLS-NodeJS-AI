@@ -14,7 +14,7 @@ export default function ReferrerList({
         className="text-[13px] py-8 text-center"
         style={{ color: "var(--text-muted)" }}
       >
-        No referrer data yet.
+        Aún no hay datos de referentes.
       </p>
     );
   }
@@ -22,7 +22,7 @@ export default function ReferrerList({
   return (
     <ul className="space-y-1">
       {sorted.map(([ref, n]) => {
-        const isDirect = ref === "Direct";
+        const isDirect = ref === "Directo";
         const href = !isDirect && /^https?:\/\//.test(ref) ? ref : null;
         return (
           <li

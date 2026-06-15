@@ -15,14 +15,14 @@ function flag(code: string | null): string {
 function relative(iso: string): string {
   const ms = Date.now() - new Date(iso).getTime();
   const s = Math.floor(ms / 1000);
-  if (s < 60) return `${s}s ago`;
+  if (s < 60) return `hace ${s}s`;
   const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
+  if (m < 60) return `hace ${m}m`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
+  if (h < 24) return `hace ${h}h`;
   const d = Math.floor(h / 24);
-  if (d < 30) return `${d}d ago`;
-  return new Date(iso).toLocaleDateString();
+  if (d < 30) return `hace ${d}d`;
+  return new Date(iso).toLocaleDateString("es");
 }
 
 function deviceIcon(device: string | null) {
@@ -39,7 +39,7 @@ export default function RecentClicks({ rows }: { rows: RecentClick[] }) {
         className="text-[13px] py-8 text-center"
         style={{ color: "var(--text-muted)" }}
       >
-        No clicks captured in this range yet.
+        Aún no hay clics registrados en este periodo.
       </p>
     );
   }
@@ -49,7 +49,7 @@ export default function RecentClicks({ rows }: { rows: RecentClick[] }) {
       <table className="w-full text-[13px]">
         <thead>
           <tr style={{ borderBottom: "1px solid var(--border)" }}>
-            {["When", "Where", "Device", "Browser", "Referrer"].map((h) => (
+            {["Cuándo", "Dónde", "Dispositivo", "Navegador", "Referente"].map((h) => (
               <th
                 key={h}
                 className="text-left px-3 py-2 text-[11px] font-medium uppercase tracking-[0.1em]"
@@ -101,10 +101,10 @@ export default function RecentClicks({ rows }: { rows: RecentClick[] }) {
                 className="px-3 py-2.5 max-w-[260px] truncate"
                 style={{
                   color:
-                    row.referrer === "Direct"
+                    row.referrer === "Directo"
                       ? "var(--text-muted)"
                       : "var(--text-primary)",
-                  fontStyle: row.referrer === "Direct" ? "italic" : "normal",
+                  fontStyle: row.referrer === "Directo" ? "italic" : "normal",
                 }}
                 title={row.referrer || ""}
               >

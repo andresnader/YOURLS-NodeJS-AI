@@ -76,12 +76,12 @@ export default function SettingsPage() {
         body: JSON.stringify(newUser),
       });
       if (res.ok) {
-        toast("User created", "success");
+        toast("Usuario creado", "success");
         setNewUser({ username: "", password: "", role: "USER" });
         fetchUsers();
       } else {
         const err = await res.json();
-        toast(err.error || "Failed", "error");
+        toast(err.error || "No se pudo crear", "error");
       }
     } catch {
       toast("Error", "error");
@@ -89,14 +89,14 @@ export default function SettingsPage() {
   };
 
   const handleDeleteUser = async (id: string) => {
-    if (!confirm("Are you sure?")) return;
+    if (!confirm("¿Estás seguro?")) return;
     try {
       const res = await fetch("/api/users", {
         method: "DELETE",
         body: JSON.stringify({ id }),
       });
       if (res.ok) {
-        toast("User deleted", "success");
+        toast("Usuario eliminado", "success");
         fetchUsers();
       }
     } catch {
@@ -109,7 +109,7 @@ export default function SettingsPage() {
     try {
       const res = await fetch("/api/links/health", { method: "POST" });
       if (res.ok) {
-        toast("Health check initiated", "success");
+        toast("Revisión de salud iniciada", "success");
         fetchUsers();
       }
     } catch {
@@ -297,7 +297,7 @@ export default function SettingsPage() {
           }}
         >
           <header>
-            <p className="text-eyebrow">Users</p>
+            <p className="text-eyebrow">Usuarios</p>
             <h2
               className="font-serif text-[22px] mt-1"
               style={{ color: "var(--text-primary)" }}
@@ -317,14 +317,14 @@ export default function SettingsPage() {
             <p className="text-eyebrow">{t("settings.create_user")}</p>
             <div className="grid grid-cols-2 gap-2">
               <input
-                placeholder="Username"
+                placeholder="Nombre de usuario"
                 value={newUser.username}
                 onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
                 className="input-glass text-[13px]"
               />
               <input
                 type="password"
-                placeholder="Password"
+                placeholder="Contraseña"
                 value={newUser.password}
                 onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
                 className="input-glass text-[13px]"
@@ -336,8 +336,8 @@ export default function SettingsPage() {
                 value={newUser.role}
                 onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
               >
-                <option value="USER">User</option>
-                <option value="ADMIN">Admin</option>
+                <option value="USER">Usuario</option>
+                <option value="ADMIN">Administrador</option>
               </select>
               <button
                 onClick={handleCreateUser}
@@ -369,7 +369,7 @@ export default function SettingsPage() {
                     className="text-[11px]"
                     style={{ color: "var(--text-muted)" }}
                   >
-                    <span className="font-mono">{u.role}</span> · {u._count.urls} links
+                    <span className="font-mono">{u.role}</span> · {u._count.urls} enlaces
                   </p>
                 </div>
                 <button
@@ -382,7 +382,7 @@ export default function SettingsPage() {
                   onMouseLeave={(e) =>
                     (e.currentTarget.style.color = "var(--text-muted)")
                   }
-                  aria-label="Delete user"
+                  aria-label="Eliminar usuario"
                 >
                   <Trash2 size={15} strokeWidth={1.75} />
                 </button>
@@ -411,15 +411,15 @@ export default function SettingsPage() {
               className="text-[13px] font-medium"
               style={{ color: "var(--text-primary)" }}
             >
-              Multitenant access
+              Acceso multiusuario
             </p>
             <p
               className="text-[13px] leading-relaxed"
               style={{ color: "var(--text-secondary)" }}
             >
-              Users can only see and manage their own links. Administrators have
-              full access to global statistics and every short link across the
-              workspace.
+              Los usuarios solo pueden ver y gestionar sus propios enlaces. Los
+              administradores tienen acceso completo a las estadísticas globales
+              y a todos los enlaces cortos del espacio de trabajo.
             </p>
           </div>
         </div>

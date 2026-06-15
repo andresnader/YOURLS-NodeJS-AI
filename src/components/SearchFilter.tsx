@@ -32,7 +32,7 @@ export default function SearchFilter({
           type="text"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search by keyword, URL, or title…"
+          placeholder="Buscar por palabra clave, URL o título…"
           className="input-glass pl-10 text-sm"
         />
       </div>
@@ -51,15 +51,15 @@ export default function SearchFilter({
             className="input-glass pl-8 pr-3 text-sm appearance-none cursor-pointer"
             style={{ minWidth: "140px" }}
           >
-            <option value="createdAt">Date</option>
-            <option value="clicks">Clicks</option>
-            <option value="keyword">Keyword</option>
+            <option value="createdAt">Fecha</option>
+            <option value="clicks">Clics</option>
+            <option value="keyword">Palabra clave</option>
           </select>
         </div>
         <button
           onClick={() => onSortOrderChange(sortOrder === "desc" ? "asc" : "desc")}
           className="btn-ghost text-xs px-3 rounded-lg whitespace-nowrap"
-          title={sortOrder === "desc" ? "Newest first" : "Oldest first"}
+          title={sortOrder === "desc" ? "Más recientes primero" : "Más antiguos primero"}
         >
           {sortOrder === "desc" ? "↓ Desc" : "↑ Asc"}
         </button>
