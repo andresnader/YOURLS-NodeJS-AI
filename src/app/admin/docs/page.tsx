@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslation } from "@/lib/LanguageContext";
-import { BookOpen, Link2, Users, Key, BarChart3, Globe, QrCode, Search, Trash2, Copy, ExternalLink, Shield, Loader2 } from "lucide-react";
+import { BookOpen, Link2, Users, Key, BarChart3, Globe, QrCode, Search, Trash2, Copy, ExternalLink, Shield, Loader2, Sparkles } from "lucide-react";
 
 const sections = [
   {
@@ -208,6 +208,73 @@ const sections = [
       }
     }
   }
+];
+
+const MCP_TOOLS = [
+  { name: "shorten_url", es: "Crea un enlace corto nuevo", en: "Create a new short link" },
+  { name: "list_links", es: "Lista y busca tus enlaces", en: "List and search your links" },
+  { name: "get_link_stats", es: "Estadísticas de un enlace", en: "Stats for a single link" },
+  { name: "get_overview", es: "Resumen general de la cuenta", en: "Account overview" },
+];
+
+const MCP_CONNECTORS = [
+  {
+    name: "Claude Code (CLI)",
+    note: { es: "Un comando en la terminal.", en: "One command in the terminal." },
+    code: `claude mcp add --transport http ameizin \\
+  https://ameiz.in/api/mcp \\
+  --header "x-api-key: TU_API_KEY"`,
+  },
+  {
+    name: "Claude Desktop",
+    note: {
+      es: "Ajustes → Conectores → Añadir conector personalizado (pega la URL), o usa este config con el puente mcp-remote:",
+      en: "Settings → Connectors → Add custom connector (paste the URL), or use this config with the mcp-remote bridge:",
+    },
+    code: `{
+  "mcpServers": {
+    "ameizin": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://ameiz.in/api/mcp",
+               "--header", "x-api-key:TU_API_KEY"]
+    }
+  }
+}`,
+  },
+  {
+    name: "opencode",
+    note: { es: "En opencode.json (o ~/.config/opencode/).", en: "In opencode.json (or ~/.config/opencode/)." },
+    code: `{
+  "mcp": {
+    "ameizin": {
+      "type": "remote",
+      "url": "https://ameiz.in/api/mcp",
+      "enabled": true,
+      "headers": { "x-api-key": "TU_API_KEY" }
+    }
+  }
+}`,
+  },
+  {
+    name: "Cursor",
+    note: { es: "En .cursor/mcp.json del proyecto.", en: "In the project's .cursor/mcp.json." },
+    code: `{
+  "mcpServers": {
+    "ameizin": {
+      "url": "https://ameiz.in/api/mcp",
+      "headers": { "x-api-key": "TU_API_KEY" }
+    }
+  }
+}`,
+  },
+  {
+    name: { es: "Cualquier otro cliente", en: "Any other client" },
+    note: { es: "Datos base para configurarlo a mano.", en: "Base values to configure it manually." },
+    code: `URL:        https://ameiz.in/api/mcp
+Transporte: Streamable HTTP (JSON-RPC, POST)
+Cabecera:   x-api-key: TU_API_KEY
+            (o Authorization: Bearer TU_API_KEY)`,
+  },
 ];
 
 export default function DocsPage() {
@@ -421,6 +488,180 @@ export default function DocsPage() {
           );
         })}
       </div>
+
+      {/* ── Conexión con IA (MCP) ── */}
+      <section className="space-y-7">
+        <header className="space-y-3">
+          <Sparkles
+            size={20}
+            strokeWidth={1.5}
+            style={{ color: "var(--color-primary)" }}
+          />
+          <h2
+            className="font-serif text-[26px] md:text-[30px] leading-tight"
+            style={{ color: "var(--text-primary)" }}
+          >
+            {lang === "es" ? "Conecta tu IA (MCP)" : "Connect your AI (MCP)"}
+          </h2>
+          <p
+            className="max-w-prose text-[14px] leading-relaxed"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            {lang === "es"
+              ? "Conecta tu asistente de IA (Claude, opencode, Cursor y otros) a tu cuenta mediante el protocolo MCP. Luego podrás pedirle en lenguaje natural que cree enlaces o te dé estadísticas. Cada clave solo accede a sus propios enlaces."
+              : "Connect your AI assistant (Claude, opencode, Cursor and others) to your account via the MCP protocol. Then you can ask it in plain language to create links or pull stats. Each key only accesses its own links."}
+          </p>
+        </header>
+
+        {/* Datos base */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            { k: "Endpoint", v: "https://ameiz.in/api/mcp" },
+            {
+              k: lang === "es" ? "Autenticación" : "Authentication",
+              v: "x-api-key: TU_API_KEY",
+            },
+            { k: lang === "es" ? "Transporte" : "Transport", v: "Streamable HTTP" },
+          ].map((d) => (
+            <div
+              key={d.k}
+              className="p-4 border"
+              style={{
+                background: "var(--bg-elevated)",
+                borderColor: "var(--border-soft)",
+                borderRadius: "var(--radius-sm)",
+              }}
+            >
+              <p className="text-eyebrow">{d.k}</p>
+              <p
+                className="font-mono text-[12px] mt-1 break-all"
+                style={{ color: "var(--color-primary)" }}
+              >
+                {d.v}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Paso previo: API key */}
+        <div
+          className="p-4 flex gap-3 border"
+          style={{
+            background: "var(--bg-elevated)",
+            borderColor: "var(--border-soft)",
+            borderRadius: "var(--radius-sm)",
+          }}
+        >
+          <Key
+            size={16}
+            strokeWidth={1.75}
+            className="mt-0.5 shrink-0"
+            style={{ color: "var(--color-primary)" }}
+          />
+          <p
+            className="text-[13px] leading-relaxed"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            {lang === "es"
+              ? "Antes de empezar, genera una clave en Configuración → Claves API y reemplaza TU_API_KEY en los ejemplos."
+              : "Before you start, generate a key in Settings → API Keys and replace TU_API_KEY in the examples."}
+          </p>
+        </div>
+
+        {/* Conectores por cliente */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {MCP_CONNECTORS.map((c) => {
+            const name = typeof c.name === "string" ? c.name : c.name[lang];
+            return (
+              <div
+                key={name}
+                className="p-6 space-y-3 border"
+                style={{
+                  background: "var(--bg-surface)",
+                  borderColor: "var(--border)",
+                  borderRadius: "var(--radius-lg)",
+                }}
+              >
+                <p
+                  className="font-serif text-[18px]"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  {name}
+                </p>
+                <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>
+                  {c.note[lang]}
+                </p>
+                <pre
+                  className="p-4 text-[12px] overflow-x-auto border"
+                  style={{
+                    background: "var(--bg-elevated)",
+                    borderColor: "var(--border-soft)",
+                    borderRadius: "var(--radius-sm)",
+                    fontFamily: "var(--font-mono)",
+                  }}
+                >
+                  <code style={{ color: "var(--color-primary)" }}>{c.code}</code>
+                </pre>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Herramientas disponibles */}
+        <div className="space-y-3">
+          <p className="text-eyebrow">
+            {lang === "es" ? "Herramientas disponibles" : "Available tools"}
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {MCP_TOOLS.map((tool) => (
+              <div
+                key={tool.name}
+                className="flex items-baseline gap-3 p-3 border"
+                style={{
+                  background: "var(--bg-elevated)",
+                  borderColor: "var(--border-soft)",
+                  borderRadius: "var(--radius-sm)",
+                }}
+              >
+                <code
+                  className="font-mono text-[12px] shrink-0"
+                  style={{ color: "var(--color-primary)" }}
+                >
+                  {tool.name}
+                </code>
+                <span className="text-[12px]" style={{ color: "var(--text-secondary)" }}>
+                  {tool[lang]}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Ejemplo de uso */}
+        <div
+          className="p-4 flex gap-3 border"
+          style={{
+            background: "var(--bg-elevated)",
+            borderColor: "var(--border-soft)",
+            borderRadius: "var(--radius-sm)",
+          }}
+        >
+          <Sparkles
+            size={16}
+            strokeWidth={1.75}
+            className="mt-0.5 shrink-0"
+            style={{ color: "var(--color-primary)" }}
+          />
+          <p
+            className="text-[13px] leading-relaxed"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            {lang === "es"
+              ? 'Ya conectado, prueba a pedirle: «Acorta https://anthropic.com como prueba-mcp» o «¿Cuántos clics tuvo prueba-mcp esta semana y de qué países?».'
+              : 'Once connected, try asking: "Shorten https://anthropic.com as test-mcp" or "How many clicks did test-mcp get this week and from which countries?".'}
+          </p>
+        </div>
+      </section>
 
       <footer className="text-center py-8 border-t border-white/10">
         <p className="text-xs opacity-40">
