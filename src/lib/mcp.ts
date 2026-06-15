@@ -8,9 +8,24 @@
  */
 import prisma from '@/lib/prisma';
 import { shortenUrl } from '@/lib/shorten';
-import { ShortenRequest } from '@/lib/schemas';
+import { ShortenRequest, UpdateLinkRequest } from '@/lib/schemas';
 import { getKeywordStats, type TimeRange } from '@/lib/stats';
+import {
+  updateLink,
+  deleteLink,
+  getOwnedLink,
+  type LinkMutationError,
+} from '@/lib/link-edit';
 import type { SessionPayload } from '@/lib/session';
+
+const MUTATION_MESSAGES: Record<LinkMutationError, string> = {
+  not_found: 'No se encontró un enlace con esa palabra clave.',
+  no_fields: 'No se indicó ningún campo para actualizar.',
+  blacklisted: 'El dominio de destino está en la lista negra.',
+  invalid_keyword: 'La nueva palabra clave no es válida.',
+  reserved: 'Esa palabra clave está reservada para el sistema.',
+  conflict: 'Esa palabra clave ya está en uso.',
+};
 
 export type McpToolContext = {
   session: SessionPayload;
@@ -219,6 +234,160 @@ const TOOLS: ToolDef[] = [
         topReferrers: topN(stats.referrers),
         topBrowsers: topN(stats.browsers),
         devices: topN(stats.devices),
+      };
+    },
+  },
+
+  {
+    name: 'get_link',
+    description:
+      'Devuelve los detalles de un enlace corto: destino, título, clics, tipo de redirección, si tiene contraseña y si está activo.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        keyword: {
+          type: 'string',
+          description: 'La palabra clave del enlace (sin la barra inicial).',
+        },
+      },
+      required: ['keyword'],
+    },
+    handler: async (args, ctx) => {
+      const keyword = String(args.keyword || '').trim();
+      if (!keyword) throw new Error('Falta la palabra clave.');
+      const link = await getOwnedLink(keyword, ctx.session);
+      if (!link) throw new Error(MUTATION_MESSAGES.not_found);
+      return {
+        shortUrl: `${ctx.baseUrl}/${link.keyword}`,
+        keyword: link.keyword,
+        destination: link.url,
+        title: link.title,
+        clicks: link.clicks,
+        redirectType: link.redirectType,
+        hasPassword: Boolean(link.password),
+        isHealthy: link.isHealthy,
+        createdAt: link.createdAt.toISOString(),
+      };
+    },
+  },
+
+  {
+    name: 'update_link',
+    description:
+      'Edita un enlace existente. Puedes cambiar el destino (url), el título, el tipo de redirección, renombrar la palabra clave (newKeyword, conserva el historial de clics) y la contraseña. Para quitar la contraseña, envía password como cadena vacía. Solo se modifican los campos que envíes.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        keyword: {
+          type: 'string',
+          description: 'La palabra clave actual del enlace a editar.',
+        },
+        url: { type: 'string', description: 'Nueva URL de destino (con https://).' },
+        title: { type: 'string', description: 'Nuevo título (vacío para quitarlo).' },
+        newKeyword: {
+          type: 'string',
+          description:
+            'Nueva palabra clave (renombra el enlace; conserva los clics). Solo letras, números, guion y guion bajo.',
+        },
+        redirectType: {
+          type: 'number',
+          enum: [301, 302, 307],
+          description: 'Nuevo tipo de redirección.',
+        },
+        password: {
+          type: 'string',
+          description: 'Nueva contraseña. Cadena vacía para quitar la protección.',
+        },
+      },
+      required: ['keyword'],
+    },
+    handler: async (args, ctx) => {
+      const keyword = String(args.keyword || '').trim();
+      if (!keyword) throw new Error('Falta la palabra clave.');
+
+      const body: Record<string, unknown> = {};
+      if (args.url !== undefined) body.url = args.url;
+      if (args.title !== undefined) body.title = args.title;
+      if (args.newKeyword !== undefined) body.keyword = args.newKeyword;
+      if (args.redirectType !== undefined) body.redirectType = args.redirectType;
+      if (args.password !== undefined) body.password = args.password;
+
+      const parsed = UpdateLinkRequest.safeParse(body);
+      if (!parsed.success) {
+        throw new Error(
+          parsed.error.issues.map((i) => i.message).join('; ') || 'Datos inválidos',
+        );
+      }
+
+      const result = await updateLink(keyword, parsed.data, ctx.session);
+      if (!result.ok) throw new Error(MUTATION_MESSAGES[result.error]);
+
+      return {
+        updated: true,
+        shortUrl: `${ctx.baseUrl}/${result.data.keyword}`,
+        keyword: result.data.keyword,
+        destination: result.data.url,
+        title: result.data.title,
+        redirectType: result.data.redirectType,
+        hasPassword: result.data.hasPassword,
+      };
+    },
+  },
+
+  {
+    name: 'delete_link',
+    description:
+      'Elimina un enlace corto de forma permanente, junto con su historial de clics. Acción irreversible: requiere confirm=true para ejecutarse.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        keyword: { type: 'string', description: 'La palabra clave del enlace a eliminar.' },
+        confirm: {
+          type: 'boolean',
+          description: 'Debe ser true para confirmar el borrado permanente.',
+        },
+      },
+      required: ['keyword', 'confirm'],
+    },
+    handler: async (args, ctx) => {
+      const keyword = String(args.keyword || '').trim();
+      if (!keyword) throw new Error('Falta la palabra clave.');
+      if (args.confirm !== true) {
+        throw new Error(
+          'Borrado no confirmado. Vuelve a llamar con confirm=true para eliminar el enlace de forma permanente.',
+        );
+      }
+      const result = await deleteLink(keyword, ctx.session);
+      if (!result.ok) throw new Error(MUTATION_MESSAGES[result.error]);
+      return { deleted: true, keyword };
+    },
+  },
+
+  {
+    name: 'get_qr_code',
+    description:
+      'Devuelve la URL de la imagen del código QR de un enlace corto, lista para mostrar o descargar.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        keyword: { type: 'string', description: 'La palabra clave del enlace.' },
+        size: {
+          type: 'number',
+          description: 'Tamaño en píxeles del QR (cuadrado). Por defecto 300.',
+        },
+      },
+      required: ['keyword'],
+    },
+    handler: async (args, ctx) => {
+      const keyword = String(args.keyword || '').trim();
+      if (!keyword) throw new Error('Falta la palabra clave.');
+      const link = await getOwnedLink(keyword, ctx.session);
+      if (!link) throw new Error(MUTATION_MESSAGES.not_found);
+      const size = Math.min(2000, Math.max(100, Number(args.size) || 300));
+      return {
+        keyword: link.keyword,
+        shortUrl: `${ctx.baseUrl}/${link.keyword}`,
+        qrImageUrl: `${ctx.baseUrl}/api/qr/${link.keyword}?size=${size}`,
       };
     },
   },

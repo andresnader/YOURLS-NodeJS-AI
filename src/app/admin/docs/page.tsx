@@ -213,7 +213,11 @@ const sections = [
 const MCP_TOOLS = [
   { name: "shorten_url", es: "Crea un enlace corto nuevo", en: "Create a new short link" },
   { name: "list_links", es: "Lista y busca tus enlaces", en: "List and search your links" },
+  { name: "get_link", es: "Detalles de un enlace", en: "Details of a single link" },
+  { name: "update_link", es: "Edita un enlace (destino, keyword…)", en: "Edit a link (destination, keyword…)" },
+  { name: "delete_link", es: "Elimina un enlace (con confirmación)", en: "Delete a link (with confirmation)" },
   { name: "get_link_stats", es: "Estadísticas de un enlace", en: "Stats for a single link" },
+  { name: "get_qr_code", es: "Código QR de un enlace", en: "QR code for a link" },
   { name: "get_overview", es: "Resumen general de la cuenta", en: "Account overview" },
 ];
 
