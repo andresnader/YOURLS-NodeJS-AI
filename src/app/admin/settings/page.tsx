@@ -159,7 +159,7 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto px-6 md:px-12 py-10 md:py-14 space-y-12 animate-fade-in">
+    <div className="max-w-[1600px] mx-auto px-6 md:px-12 py-10 md:py-14 space-y-12 animate-fade-in">
       <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div className="space-y-3">
           <p className="text-eyebrow">{t("common.settings")}</p>

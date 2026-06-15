@@ -127,10 +127,10 @@ export default function LinkTable({
         }}
       >
         <div className="overflow-x-auto">
-          <table className="w-full text-[14px]">
+          <table className="w-full table-fixed text-[14px]">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                <th className={`${headPad} text-left w-10`}>
+                <th className={`${headPad} text-left`} style={{ width: 48 }}>
                   <input
                     type="checkbox"
                     checked={allSelected}
@@ -153,19 +153,19 @@ export default function LinkTable({
                 </th>
                 <th
                   className={`${headPad} text-right text-[11px] font-medium uppercase tracking-[0.1em]`}
-                  style={{ color: "var(--text-muted)" }}
+                  style={{ color: "var(--text-muted)", width: 96 }}
                 >
                   Clics
                 </th>
                 <th
                   className={`${headPad} text-left text-[11px] font-medium uppercase tracking-[0.1em] hidden lg:table-cell`}
-                  style={{ color: "var(--text-muted)" }}
+                  style={{ color: "var(--text-muted)", width: 132 }}
                 >
                   Estado
                 </th>
                 <th
-                  className={`${headPad} text-right text-[11px] font-medium uppercase tracking-[0.1em] sticky right-0`}
-                  style={{ color: "var(--text-muted)", background: "var(--bg-surface)" }}
+                  className={`${headPad} text-right text-[11px] font-medium uppercase tracking-[0.1em]`}
+                  style={{ color: "var(--text-muted)", width: 172 }}
                 >
                   Acciones
                 </th>
@@ -248,7 +248,7 @@ export default function LinkTable({
                   </td>
                   <td className={`${cellPad} hidden md:table-cell`}>
                     <p
-                      className="text-[13px] truncate max-w-[320px]"
+                      className="text-[13px] truncate"
                       style={{ color: "var(--text-secondary)" }}
                     >
                       {item.url}
@@ -298,13 +298,7 @@ export default function LinkTable({
                       </div>
                     </div>
                   </td>
-                  <td
-                    className={`${cellPad} sticky right-0`}
-                    style={{
-                      background: "var(--bg-surface)",
-                      borderLeft: "1px solid var(--border-soft)",
-                    }}
-                  >
+                  <td className={cellPad}>
                     <div className="flex items-center justify-end gap-0.5">
                       {[
                         { fn: () => handleCopy(item.keyword), icon: Copy, label: "Copiar" },

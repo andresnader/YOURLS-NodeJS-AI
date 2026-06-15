@@ -46,14 +46,20 @@ export default function RecentClicks({ rows }: { rows: RecentClick[] }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-[13px]">
+      <table className="w-full table-fixed text-[13px]">
         <thead>
           <tr style={{ borderBottom: "1px solid var(--border)" }}>
-            {["Cuándo", "Dónde", "Dispositivo", "Navegador", "Referente"].map((h) => (
+            {[
+              { h: "Cuándo", w: 130 },
+              { h: "Dónde", w: undefined },
+              { h: "Dispositivo", w: 140 },
+              { h: "Navegador", w: 120 },
+              { h: "Referente", w: undefined },
+            ].map(({ h, w }) => (
               <th
                 key={h}
                 className="text-left px-3 py-2 text-[11px] font-medium uppercase tracking-[0.1em]"
-                style={{ color: "var(--text-muted)" }}
+                style={{ color: "var(--text-muted)", width: w }}
               >
                 {h}
               </th>
@@ -98,7 +104,7 @@ export default function RecentClicks({ rows }: { rows: RecentClick[] }) {
                 {row.browser || "—"}
               </td>
               <td
-                className="px-3 py-2.5 max-w-[260px] truncate"
+                className="px-3 py-2.5 truncate"
                 style={{
                   color:
                     row.referrer === "Directo"

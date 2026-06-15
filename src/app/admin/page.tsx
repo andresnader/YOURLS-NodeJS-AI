@@ -12,7 +12,7 @@ export default function AdminPage() {
   const { t } = useTranslation();
 
   return (
-    <div className="max-w-6xl mx-auto px-6 md:px-12 py-10 md:py-14 space-y-14 animate-fade-in">
+    <div className="max-w-[1600px] mx-auto px-6 md:px-12 py-10 md:py-14 space-y-14 animate-fade-in">
       {/* Editorial masthead */}
       <header className="space-y-3">
         <p className="text-eyebrow">{t("admin.title")}</p>

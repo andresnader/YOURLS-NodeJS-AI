@@ -8,7 +8,7 @@ export default function GlobalStatsPage() {
   const { t } = useTranslation();
 
   return (
-    <div className="max-w-6xl mx-auto px-6 md:px-12 py-10 md:py-14 space-y-14 animate-fade-in">
+    <div className="max-w-[1600px] mx-auto px-6 md:px-12 py-10 md:py-14 space-y-14 animate-fade-in">
       <header className="space-y-3">
         <p className="text-eyebrow">{t("common.stats")}</p>
         <h1 className="text-h1" style={{ color: "var(--text-primary)" }}>

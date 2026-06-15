@@ -33,7 +33,7 @@ export default async function KeywordStatsPage({
     : "7d";
 
   return (
-    <div className="max-w-6xl mx-auto px-6 md:px-12 py-10 md:py-14 space-y-12 animate-fade-in">
+    <div className="max-w-[1600px] mx-auto px-6 md:px-12 py-10 md:py-14 space-y-12 animate-fade-in">
       <header className="space-y-5">
         <Link
           href="/admin/stats"
