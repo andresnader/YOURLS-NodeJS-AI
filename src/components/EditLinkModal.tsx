@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { X, Check, Loader2, Link2, Type, Hash, Shield, AlertTriangle } from "lucide-react";
 import { useToast } from "./Toast";
+import RedirectTypeHelp from "./RedirectTypeHelp";
 
 interface UrlItem {
   keyword: string;
@@ -38,7 +39,7 @@ export default function EditLinkModal({ item, onClose, onSaved }: EditLinkModalP
     try {
       new URL(url);
     } catch {
-      toast("Please enter a valid URL (including https://)", "error");
+      toast("Ingresa una URL válida (incluyendo https://)", "error");
       return;
     }
 
@@ -57,7 +58,7 @@ export default function EditLinkModal({ item, onClose, onSaved }: EditLinkModalP
     } else if (protect && password) {
       body.password = password;
     } else if (protect && !password && !item.hasPassword) {
-      toast("Enter a password or turn off protection", "error");
+      toast("Ingresa una contraseña o desactiva la protección", "error");
       return;
     }
 
@@ -75,14 +76,14 @@ export default function EditLinkModal({ item, onClose, onSaved }: EditLinkModalP
       });
       const data = await res.json();
       if (res.ok) {
-        toast("Link updated", "success");
+        toast("Enlace actualizado", "success");
         onSaved();
       } else {
-        toast(data.error || "Failed to update link", "error");
+        toast(data.error || "No se pudo actualizar el enlace", "error");
         setSaving(false);
       }
     } catch {
-      toast("Network error", "error");
+      toast("Error de conexión", "error");
       setSaving(false);
     }
   };
@@ -109,7 +110,7 @@ export default function EditLinkModal({ item, onClose, onSaved }: EditLinkModalP
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close"
+          aria-label="Cerrar"
           className="absolute top-4 right-4 p-1.5 rounded cursor-pointer transition-colors"
           style={{ color: "var(--text-muted)" }}
         >
@@ -117,26 +118,26 @@ export default function EditLinkModal({ item, onClose, onSaved }: EditLinkModalP
         </button>
 
         <h3 className="font-serif text-[22px] mb-6" style={{ color: "var(--text-primary)" }}>
-          Edit link
+          Editar enlace
         </h3>
 
         <div className="space-y-5">
           {/* Keyword */}
           <div className="space-y-2">
             <label className="text-[12px] font-medium flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
-              <Hash size={13} strokeWidth={1.75} /> Short keyword
+              <Hash size={13} strokeWidth={1.75} /> Palabra clave
             </label>
             <input
               type="text"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               className="input-glass text-[14px] font-mono"
-              placeholder="my-link"
+              placeholder="mi-enlace"
             />
             {keywordChanged && (
               <p className="text-[12px] flex items-start gap-1.5" style={{ color: "var(--color-warning, #b45309)" }}>
                 <AlertTriangle size={13} strokeWidth={1.75} className="mt-0.5 shrink-0" />
-                Changing the keyword updates the short URL. Click history is preserved, but the old link will stop working.
+                Cambiar la palabra clave modifica el enlace corto. El historial de clics se conserva, pero el enlace anterior dejará de funcionar.
               </p>
             )}
           </div>
@@ -144,28 +145,28 @@ export default function EditLinkModal({ item, onClose, onSaved }: EditLinkModalP
           {/* Title */}
           <div className="space-y-2">
             <label className="text-[12px] font-medium flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
-              <Type size={13} strokeWidth={1.75} /> Title
+              <Type size={13} strokeWidth={1.75} /> Título
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="input-glass text-[14px]"
-              placeholder="Optional title"
+              placeholder="Título opcional"
             />
           </div>
 
           {/* Destination URL */}
           <div className="space-y-2">
             <label className="text-[12px] font-medium flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
-              <Link2 size={13} strokeWidth={1.75} /> Destination URL
+              <Link2 size={13} strokeWidth={1.75} /> URL de destino
             </label>
             <input
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               className="input-glass text-[14px]"
-              placeholder="https://example.com"
+              placeholder="https://ejemplo.com"
               required
             />
           </div>
@@ -173,16 +174,17 @@ export default function EditLinkModal({ item, onClose, onSaved }: EditLinkModalP
           {/* Redirect type */}
           <div className="space-y-2">
             <label className="text-[12px] font-medium block" style={{ color: "var(--text-muted)" }}>
-              Redirect type
+              Tipo de redirección
             </label>
             <select
               value={redirectType}
               onChange={(e) => setRedirectType(Number(e.target.value))}
               className="input-glass text-[14px] cursor-pointer"
             >
-              <option value={301}>301 — Permanent</option>
-              <option value={302}>302 — Temporary</option>
+              <option value={301}>Permanente (301)</option>
+              <option value={302}>Temporal (302)</option>
             </select>
+            <RedirectTypeHelp />
           </div>
 
           {/* Password protection */}
@@ -195,7 +197,7 @@ export default function EditLinkModal({ item, onClose, onSaved }: EditLinkModalP
                 style={{ accentColor: "var(--color-primary)" }}
               />
               <span className="text-[12px] font-medium flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
-                <Shield size={13} strokeWidth={1.75} /> Password protect
+                <Shield size={13} strokeWidth={1.75} /> Proteger con contraseña
               </span>
             </label>
             {protect && (
@@ -204,7 +206,7 @@ export default function EditLinkModal({ item, onClose, onSaved }: EditLinkModalP
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="input-glass text-[14px]"
-                placeholder={item.hasPassword ? "Leave blank to keep current" : "Set a password"}
+                placeholder={item.hasPassword ? "Déjalo vacío para mantener la actual" : "Define una contraseña"}
                 autoComplete="new-password"
               />
             )}
@@ -215,16 +217,16 @@ export default function EditLinkModal({ item, onClose, onSaved }: EditLinkModalP
           <button type="submit" disabled={saving} className="btn-primary flex-1 py-2.5 text-[14px]">
             {saving ? (
               <>
-                <Loader2 size={15} strokeWidth={1.75} className="animate-spin" /> Saving…
+                <Loader2 size={15} strokeWidth={1.75} className="animate-spin" /> Guardando…
               </>
             ) : (
               <>
-                <Check size={15} strokeWidth={1.75} /> Save changes
+                <Check size={15} strokeWidth={1.75} /> Guardar cambios
               </>
             )}
           </button>
           <button type="button" onClick={onClose} className="btn-ghost py-2.5 px-5 text-[14px]">
-            Cancel
+            Cancelar
           </button>
         </div>
       </form>

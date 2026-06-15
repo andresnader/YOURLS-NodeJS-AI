@@ -1,10 +1,11 @@
 "use client";
 
-import { Link2, Zap, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Link2, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "./Toast";
 import { useTranslation } from "@/lib/LanguageContext";
+import RedirectTypeHelp from "./RedirectTypeHelp";
 
 export default function ShortenForm() {
   const [url, setUrl] = useState("");
@@ -198,6 +199,7 @@ export default function ShortenForm() {
                   );
                 })}
               </div>
+              <RedirectTypeHelp />
             </div>
             <div className="space-y-2">
               <label
