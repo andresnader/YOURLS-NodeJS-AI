@@ -52,11 +52,21 @@ const API_KEY_ALLOWED_ROUTES = [
   '/api/stats',
   '/api/test',
   '/api/links',
+  '/api/mcp',
   '/api/v1/shorten',
   '/api/v1/stats',
   '/api/v1/test',
   '/api/v1/links',
 ];
+
+/** API key from the x-api-key header or an Authorization: Bearer header. */
+function extractApiKey(request: NextRequest): string | null {
+  const direct = request.headers.get('x-api-key');
+  if (direct) return direct.trim();
+  const auth = request.headers.get('authorization');
+  if (auth && auth.toLowerCase().startsWith('bearer ')) return auth.slice(7).trim();
+  return null;
+}
 
 function getIp(request: NextRequest): string {
   return (
@@ -88,7 +98,7 @@ export async function proxy(request: NextRequest) {
   const cookieToken = request.cookies.get(SESSION_COOKIE)?.value;
   const cookieSession: SessionPayload | null = verifySession(cookieToken);
 
-  const apiKey = request.headers.get('x-api-key');
+  const apiKey = extractApiKey(request);
   const apiKeyData = apiKey ? await lookupApiKey(apiKey) : null;
 
   const isAuthenticated = !!cookieSession || !!apiKeyData;
