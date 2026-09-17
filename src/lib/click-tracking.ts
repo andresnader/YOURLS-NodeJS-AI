@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma';
+import { firmar } from '@/lib/webhook';
 
 export type MetadatosClic = {
   ip: string;
@@ -52,7 +53,68 @@ export async function registrarClic(keyword: string, meta: MetadatosClic): Promi
         city: geo.city,
       },
     });
+    await emitirWebhook(keyword, geo, meta);
   } catch (error) {
     console.error(`[registrarClic] ${keyword}:`, error);
+  }
+}
+
+type DatosWebhook = {
+  event: 'link.clicked';
+  keyword: string;
+  url: string;
+  clickedAt: string;
+  geo: Geo;
+  device: string;
+  browser: string;
+  os: string;
+  referrer: string;
+};
+
+/**
+ * Entrega best-effort: timeout corto, sin reintentos y sin cola. La API de
+ * estadísticas es la fuente de verdad, así que un aviso perdido no descuadra
+ * ningún conteo. Nunca lanza.
+ */
+async function emitirWebhook(keyword: string, geo: Geo, meta: MetadatosClic): Promise<void> {
+  try {
+    const registro = await prisma.url.findUnique({
+      where: { keyword },
+      select: { url: true, user: { select: { webhookUrl: true, webhookSecret: true } } },
+    });
+
+    const destino = registro?.user?.webhookUrl;
+    const secreto = registro?.user?.webhookSecret;
+    if (!registro || !destino || !secreto) return;
+
+    const datos: DatosWebhook = {
+      event: 'link.clicked',
+      keyword,
+      url: registro.url,
+      clickedAt: new Date().toISOString(),
+      geo,
+      device: meta.device,
+      browser: meta.browser,
+      os: meta.os,
+      referrer: meta.referrer,
+    };
+
+    // Se serializa UNA vez y se firma esa misma cadena: firmar el objeto y
+    // serializar aparte rompería la verificación en el receptor.
+    const cuerpo = JSON.stringify(datos);
+    const timestamp = Math.floor(Date.now() / 1000);
+
+    await fetch(destino, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Yourls-Timestamp': String(timestamp),
+        'X-Yourls-Signature': firmar(cuerpo, secreto, timestamp),
+      },
+      body: cuerpo,
+      signal: AbortSignal.timeout(3000),
+    });
+  } catch (error) {
+    console.error(`[emitirWebhook] ${keyword}:`, error);
   }
 }

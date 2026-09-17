@@ -53,6 +53,8 @@ model User {
   passwordHash String
   role         String   @default("USER")
   createdAt    DateTime @default(now())
+  webhookUrl    String?
+  webhookSecret String?
   apiKeys      ApiKey[]
   urls         Url[]
 }
