@@ -739,7 +739,7 @@ export function verificar(
 - [ ] **Step 4: Correr las pruebas y verificar que pasan**
 
 Run: `npm test`
-Expected: PASS — 23 pruebas
+Expected: PASS — 22 pruebas
 
 - [ ] **Step 5: Commit**
 
@@ -968,7 +968,7 @@ Y al final del `try` de `registrarClic`, tras el `prisma.log.create`:
 - [ ] **Step 6: Correr todas las pruebas y verificar que pasan**
 
 Run: `npx tsc --noEmit && npm test && npm run lint`
-Expected: PASS — 26 pruebas, sin errores de tipos ni de lint
+Expected: PASS — 25 pruebas, sin errores de tipos ni de lint
 
 - [ ] **Step 7: Verificar de punta a punta contra un receptor de prueba**
 
@@ -1032,7 +1032,7 @@ Verificables sin conocer el código:
 4. Con la clave de otro usuario devuelve `403`
 5. Un POST al receptor con la firma alterada en un carácter es rechazado
 6. El cuerpo del webhook no contiene la IP del visitante
-7. `npm test` pasa con 26 pruebas
+7. `npm test` pasa con 25 pruebas
 
 ## Deuda observada, fuera de alcance
 
@@ -1048,3 +1048,19 @@ Se detectó al leer el repositorio y **no se toca en este plan**:
 - `data/mind.db-wal` y `data/mind.db-shm` están versionados en un repositorio público. El
   `.gitignore` cubre `*.db` y `*.db-journal` pero no `-shm` ni `-wal`
 - `.git` pesa 401 MB
+
+## Requisito de despliegue detectado en la verificación
+
+**Este repositorio no usa migraciones de Prisma.** No existe `prisma/migrations/` ni script
+de migración: el schema se aplica con `prisma db push`. La Tarea 5 añade `webhookUrl` y
+`webhookSecret` a `User`, así que **antes de desplegar** hay que correr contra la base de
+Railway:
+
+```bash
+DATABASE_URL="<url de produccion>" npx prisma db push
+```
+
+Si se despliega sin eso, el modo de fallo es **silencioso**: `emitirWebhook` selecciona esas
+dos columnas, Prisma lanza porque no existen, y el `try/catch` del módulo se traga el error.
+Los clics se siguen registrando con normalidad y los webhooks simplemente nunca salen, sin
+nada en rojo que lo delate.
