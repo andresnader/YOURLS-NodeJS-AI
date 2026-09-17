@@ -34,15 +34,17 @@ export async function GET(request: Request, context: { params: Promise<{ keyword
     const device = parser.getDevice().type || 'desktop';
 
     // Start background tasks
-    const updateClicks = prisma.url.update({
+    // El contador sí se espera: es un UPDATE de una fila y debe ser exacto.
+    await prisma.url.update({
       where: { keyword },
-      data: { clicks: { increment: 1 } }
+      data: { clicks: { increment: 1 } },
     });
 
-    await Promise.all([
-      updateClicks,
-      registrarClic(keyword, { ip, userAgent, referrer, browser, os, device }),
-    ]);
+    // La geolocalización y el Log NO se esperan: esperarlos metía la latencia de
+    // ip-api.com en cada redirección. registrarClic nunca lanza, así que no hace
+    // falta un .catch() aquí, pero se deja explícito para que nadie lo quite.
+    void registrarClic(keyword, { ip, userAgent, referrer, browser, os, device })
+      .catch((error) => console.error(`[redirect] registro de ${keyword}:`, error));
 
     // Use specific redirect type (301 or 302/307)
     // 301 = Permanent, 302 = Found (Temporary)
